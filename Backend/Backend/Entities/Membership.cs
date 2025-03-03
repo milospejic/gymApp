@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Backend.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Entities
 {
@@ -9,6 +10,9 @@ namespace Backend.Entities
         public DateTime MembershipFrom { get; set; }
         public DateTime MembershipTo { get; set;}
         public string MembershipStatus { get; set; }
+        public Duration PlanDuration { get; set; }
+        public double MembershipFee { get; set; }
+        public Boolean IsFeePaid { get; set; }
         public Guid MembershipPlanID { get; set; }
     }
 }

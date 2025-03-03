@@ -1,4 +1,6 @@
-﻿namespace Backend.Dto.BasicDtos
+﻿using Backend.Enums;
+
+namespace Backend.Dto.BasicDtos
 {
     public class MembershipDto
     {
@@ -6,6 +8,9 @@
         public DateTime MembershipFrom { get; set; }
         public DateTime MembershipTo { get; set; }
         public string MembershipStatus { get; set; }
-        public Guid MembershipPlanID { get; set; }
+        public Duration PlanDuration { get; set; }
+        public double MembershipFee { get; set; }
+        public Boolean IsFeePaid { get; set; }
+        public Guid MembershipPlanId { get; set; }
     }
 }

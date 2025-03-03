@@ -12,11 +12,13 @@ namespace Backend.Controllers
     public class MemberController : ControllerBase
     {
         private readonly IMemberRepository memberRepository;
+        private readonly IMembershipRepository membershipRepository;
         private readonly IMapper mapper;
 
-        public MemberController(IMemberRepository memberRepository, IMapper mapper)
+        public MemberController(IMemberRepository memberRepository, IMembershipRepository membershipRepository, IMapper mapper)
         {
             this.memberRepository = memberRepository;
+            this.membershipRepository = membershipRepository;
             this.mapper = mapper;
         }
 
@@ -54,8 +56,16 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Guid>> CreateMember(MemberCreateDto memberDto)
         {
-            var memberId = await memberRepository.CreateMember(memberDto);
-            return Ok(memberId);
+            try
+            {
+                var membership = await membershipRepository.CreateMembership(memberDto.Membership);
+                var member = await memberRepository.CreateMember(memberDto, membership.MembershipID);
+                return Ok(member);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
 
@@ -85,8 +95,30 @@ namespace Backend.Controllers
 
             try
             {
+                var member = await memberRepository.GetMemberById(id);
+                if (member == null)
+                {
+                    return NotFound("There is no member with id: " + id);
+                }
                 await memberRepository.DeleteMember(id);
                 return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPatch]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ChangeMemberPassword(Guid id, PasswordUpdateDto passwordUpdateDto)
+        {
+            try
+            {
+                await memberRepository.ChangeMemberPassword(id, passwordUpdateDto);
+                return Ok("Password updated!");
             }
             catch (ArgumentException ex)
             {

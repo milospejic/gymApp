@@ -32,11 +32,11 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("AdminName")
+                    b.Property<string>("AdminHashedPassword")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("AdminPassword")
+                    b.Property<string>("AdminName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -57,8 +57,8 @@ namespace Backend.Migrations
                         {
                             AdminId = new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"),
                             AdminEmail = "petar@example.com",
+                            AdminHashedPassword = "petar123",
                             AdminName = "Petar",
-                            AdminPassword = "petar123",
                             AdminPhone = "0649459884",
                             AdminSurname = "Petrovic"
                         });
@@ -74,11 +74,11 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("MemberName")
+                    b.Property<string>("MemberHashedPassword")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("MemberPassword")
+                    b.Property<string>("MemberName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -102,8 +102,8 @@ namespace Backend.Migrations
                         {
                             MemberId = new Guid("d8b84401-eba8-4a64-9f19-23f3344e0e82"),
                             MemberEmail = "jovan@example.com",
+                            MemberHashedPassword = "jovan123",
                             MemberName = "Jovan",
-                            MemberPassword = "jovan123",
                             MemberPhone = "0648751234",
                             MemberSurname = "Jovanovic",
                             MembershipID = new Guid("48923344-0974-45f1-8d72-25030d19437e")
@@ -112,8 +112,8 @@ namespace Backend.Migrations
                         {
                             MemberId = new Guid("f88f5b24-d669-49e3-b21b-072a50c08bc3"),
                             MemberEmail = "masa@example.com",
+                            MemberHashedPassword = "masa1234",
                             MemberName = "Masa",
-                            MemberPassword = "masa1234",
                             MemberPhone = "0645731988",
                             MemberSurname = "Lukic",
                             MembershipID = new Guid("ac6e2085-57ec-4c1e-a34c-42408b9daebe")
@@ -125,6 +125,12 @@ namespace Backend.Migrations
                     b.Property<Guid>("MembershipID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsFeePaid")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("MembershipFee")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("MembershipFrom")
                         .HasColumnType("datetime2");
@@ -139,6 +145,9 @@ namespace Backend.Migrations
                     b.Property<DateTime>("MembershipTo")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("PlanDuration")
+                        .HasColumnType("int");
+
                     b.HasKey("MembershipID");
 
                     b.ToTable("Memberships");
@@ -147,18 +156,24 @@ namespace Backend.Migrations
                         new
                         {
                             MembershipID = new Guid("48923344-0974-45f1-8d72-25030d19437e"),
+                            IsFeePaid = false,
+                            MembershipFee = 30.0,
                             MembershipFrom = new DateTime(2025, 2, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             MembershipPlanID = new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"),
-                            MembershipStatus = "Ongoing",
-                            MembershipTo = new DateTime(2025, 3, 21, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                            MembershipStatus = "Active",
+                            MembershipTo = new DateTime(2025, 3, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PlanDuration = 1
                         },
                         new
                         {
                             MembershipID = new Guid("ac6e2085-57ec-4c1e-a34c-42408b9daebe"),
+                            IsFeePaid = false,
+                            MembershipFee = 30.0,
                             MembershipFrom = new DateTime(2025, 2, 19, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             MembershipPlanID = new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"),
-                            MembershipStatus = "Ongoing",
-                            MembershipTo = new DateTime(2025, 3, 19, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                            MembershipStatus = "Active",
+                            MembershipTo = new DateTime(2025, 3, 19, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PlanDuration = 1
                         });
                 });
 
@@ -172,10 +187,6 @@ namespace Backend.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PlanDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PlanDuration")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -196,7 +207,6 @@ namespace Backend.Migrations
                             PlanID = new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"),
                             AdminID = new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"),
                             PlanDescription = "Gym for 30 days",
-                            PlanDuration = "30",
                             PlanName = "Standard",
                             PlanPrice = 30.0
                         },
@@ -205,7 +215,6 @@ namespace Backend.Migrations
                             PlanID = new Guid("87272d68-35fd-4bf5-af55-5f0daa5bada8"),
                             AdminID = new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"),
                             PlanDescription = "Gym + Spa for 30 days",
-                            PlanDuration = "30",
                             PlanName = "Silver",
                             PlanPrice = 45.0
                         });

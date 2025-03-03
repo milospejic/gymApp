@@ -34,6 +34,7 @@ namespace Backend.Data.Repository
         public async Task<MembershipPlanDto> CreateMembershipPlan(MembershipPlanCreateDto membershipPlanDto)
         {
             var membershipPlan = mapper.Map<MembershipPlan>(membershipPlanDto);
+            membershipPlan.PlanID = Guid.NewGuid();
             context.MembershipPlans.Add(membershipPlan);
             await context.SaveChangesAsync();
             return mapper.Map<MembershipPlanDto>(membershipPlan);

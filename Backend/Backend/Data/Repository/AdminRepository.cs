@@ -4,6 +4,7 @@ using Backend.Data.IRepository;
 using Backend.Dto.BasicDtos;
 using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
+using Backend.Dto.UpdateDtos.Backend.Dto.UpdateDtos;
 using Backend.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +35,7 @@ namespace Backend.Data.Repository
         public async Task<AdminDto> CreateAdmin(AdminCreateDto adminDto)
         {
             var admin = mapper.Map<Admin>(adminDto);
+            admin.AdminId = Guid.NewGuid();
             context.Admins.Add(admin);
             await context.SaveChangesAsync();
             return mapper.Map<AdminDto>(admin);
@@ -62,5 +64,22 @@ namespace Backend.Data.Repository
             context.Admins.Remove(admin);
             await context.SaveChangesAsync();
         }
+
+        public async Task ChangeAdminPassword(Guid id, PasswordUpdateDto passwordUpdateDto)
+        {
+            var admin = await context.Admins.FindAsync(id);
+            if (admin == null)
+            {
+                throw new ArgumentException("Admin not found");
+            }
+            if(admin.AdminHashedPassword != passwordUpdateDto.CurrentPassword)
+            {
+                throw new ArgumentException("Current password is wrong");
+            }
+            admin.AdminHashedPassword = passwordUpdateDto.NewPassword;
+            await context.SaveChangesAsync();
+        }
     }
+
+   
 }

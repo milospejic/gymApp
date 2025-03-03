@@ -48,17 +48,6 @@ namespace Backend.Controllers
             return Ok(membership);
         }
 
-        [HttpPost]
-        [Consumes("application/json")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<Guid>> CreateMembership(MembershipCreateDto membershipDto)
-        {
-            var membershipId = await membershipRepository.CreateMembership(membershipDto);
-            return Ok(membershipId);
-        }
-
-
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -76,22 +65,5 @@ namespace Backend.Controllers
             }
         }
 
-        [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteMembership(Guid id)
-        {
-
-            try
-            {
-                await membershipRepository.DeleteMembership(id);
-                return NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
     }
 }

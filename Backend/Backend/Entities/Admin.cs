@@ -1,4 +1,6 @@
-﻿namespace Backend.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Backend.Entities
 {
     public class Admin
     {
@@ -7,6 +9,6 @@
         public string AdminSurname { get; set; }
         public string AdminEmail { get; set; }
         public string AdminPhone { get; set; }
-        public string AdminPassword { get; set; }
+        public string AdminHashedPassword { get; set; }
     }
 }

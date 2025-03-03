@@ -10,6 +10,6 @@ namespace Backend.Data.IRepository
         Task<MembershipDto> GetMembershipById(Guid userId);
         Task<MembershipDto> CreateMembership(MembershipCreateDto userDto);
         Task UpdateMembership(Guid userId, MembershipUpdateDto userDto);
-        Task DeleteMembership(Guid userId);
+
     }
 }

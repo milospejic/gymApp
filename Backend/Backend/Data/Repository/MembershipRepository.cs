@@ -5,7 +5,10 @@ using Backend.Dto.BasicDtos;
 using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
 using Backend.Entities;
+using Backend.Enums;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Headers;
+using System.Numerics;
 
 namespace Backend.Data.Repository
 {
@@ -33,7 +36,38 @@ namespace Backend.Data.Repository
 
         public async Task<MembershipDto> CreateMembership(MembershipCreateDto membershipDto)
         {
+
+            var plan = await context.MembershipPlans.FindAsync(membershipDto.MembershipPlanID);
+            if (plan == null)
+            {
+                throw new ArgumentException("Plan was not found");
+            }
+             
             var membership = mapper.Map<Membership>(membershipDto);
+            membership.MembershipFrom = DateTime.Now;
+            membership.MembershipStatus = "Active";
+            switch (membership.PlanDuration)
+            {
+                case Duration.OneMonth:
+                    membership.MembershipTo = DateTime.Now.AddMonths(1);
+                    membership.MembershipFee = plan.PlanPrice;
+                    break;
+                case Duration.ThreeMonths:
+                    membership.MembershipTo = DateTime.Now.AddMonths(3);
+                    membership.MembershipFee = plan.PlanPrice * 3 * 0.9;
+                    break;
+                case Duration.SixMonths:
+                    membership.MembershipTo = DateTime.Now.AddMonths(6);
+                    membership.MembershipFee = plan.PlanPrice * 6 * 0.8;
+                    break;
+                case Duration.OneYear:
+                    membership.MembershipTo = DateTime.Now.AddMonths(12);
+                    membership.MembershipFee = plan.PlanPrice * 12 * 0.7;
+                    break;
+                default:
+                    break;
+            }
+            membership.IsFeePaid = false;
             context.Memberships.Add(membership);
             await context.SaveChangesAsync();
             return mapper.Map<MembershipDto>(membership);
@@ -46,21 +80,39 @@ namespace Backend.Data.Repository
             {
                 throw new ArgumentException("Membership not found");
             }
-
-            mapper.Map(membershipDto, membership);
-            await context.SaveChangesAsync();
-        }
-
-        public async Task DeleteMembership(Guid id)
-        {
-            var membership = await context.Memberships.FindAsync(id);
-            if (membership == null)
-            {
-                throw new ArgumentException("Membership not found");
+            var plan = await context.MembershipPlans.FindAsync(membershipDto.MembershipPlanID);
+            if (plan == null) {
+                throw new ArgumentException("Plan not found");
+                    
             }
-
-            context.Memberships.Remove(membership);
+            mapper.Map(membershipDto, membership);
+            membership.MembershipFrom = DateTime.Now;
+            membership.MembershipStatus = "Active";
+            switch (membership.PlanDuration)
+            {
+                case Duration.OneMonth:
+                    membership.MembershipTo = DateTime.Now.AddMonths(1);
+                    membership.MembershipFee = plan.PlanPrice;
+                    break;
+                case Duration.ThreeMonths:
+                    membership.MembershipTo = DateTime.Now.AddMonths(3);
+                    membership.MembershipFee = plan.PlanPrice * 3 * 0.9;
+                    break;
+                case Duration.SixMonths:
+                    membership.MembershipTo = DateTime.Now.AddMonths(6);
+                    membership.MembershipFee = plan.PlanPrice * 6 * 0.8;
+                    break;
+                case Duration.OneYear:
+                    membership.MembershipTo = DateTime.Now.AddMonths(12);
+                    membership.MembershipFee = plan.PlanPrice * 12 * 0.7;
+                    break;
+                default:
+                    break;
+            }
+            membership.IsFeePaid = false;
+      
             await context.SaveChangesAsync();
         }
+
     }
 }

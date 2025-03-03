@@ -70,7 +70,7 @@
       },
       {
         "Name": "adminDto",
-        "Type": "Backend.Dto.UpdateDtos.AdminUpdateDto",
+        "Type": "Backend.Dto.UpdateDtos.Backend.Dto.UpdateDtos.AdminUpdateDto",
         "IsRequired": true
       }
     ],
@@ -124,6 +124,47 @@
           "text/json"
         ],
         "StatusCode": 404
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
+  },
+  {
+    "ContainingType": "Backend.Controllers.AdminController",
+    "Method": "ChangeAdminPassword",
+    "RelativePath": "api/admin",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "passwordUpdateDto",
+        "Type": "Backend.Dto.UpdateDtos.PasswordUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
       },
       {
         "Type": "System.Void",
@@ -302,6 +343,47 @@
   },
   {
     "ContainingType": "Backend.Controllers.MemberController",
+    "Method": "ChangeMemberPassword",
+    "RelativePath": "api/member",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "passwordUpdateDto",
+        "Type": "Backend.Dto.UpdateDtos.PasswordUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
+  },
+  {
+    "ContainingType": "Backend.Controllers.MemberController",
     "Method": "GetMemberById",
     "RelativePath": "api/member/{id}",
     "HttpMethod": "GET",
@@ -362,37 +444,6 @@
   },
   {
     "ContainingType": "Backend.Controllers.MembershipController",
-    "Method": "CreateMembership",
-    "RelativePath": "api/membership",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "membershipDto",
-        "Type": "Backend.Dto.CreateDtos.MembershipCreateDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Guid",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 201
-      },
-      {
-        "Type": "System.Void",
-        "MediaTypes": [],
-        "StatusCode": 500
-      }
-    ]
-  },
-  {
-    "ContainingType": "Backend.Controllers.MembershipController",
     "Method": "UpdateMembership",
     "RelativePath": "api/membership",
     "HttpMethod": "PUT",
@@ -424,42 +475,6 @@
         "Type": "System.Void",
         "MediaTypes": [],
         "StatusCode": 200
-      },
-      {
-        "Type": "System.Void",
-        "MediaTypes": [],
-        "StatusCode": 500
-      }
-    ]
-  },
-  {
-    "ContainingType": "Backend.Controllers.MembershipController",
-    "Method": "DeleteMembership",
-    "RelativePath": "api/membership",
-    "HttpMethod": "DELETE",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Guid",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Void",
-        "MediaTypes": [],
-        "StatusCode": 204
-      },
-      {
-        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 404
       },
       {
         "Type": "System.Void",

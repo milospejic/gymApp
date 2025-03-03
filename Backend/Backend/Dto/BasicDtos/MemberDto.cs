@@ -7,6 +7,6 @@
         public string MemberSurname { get; set; }
         public string MemberEmail { get; set; }
         public string MemberPhone { get; set; }
-        public Guid MembershipID { get; set; }
+        public Guid MembershipId { get; set; }
     }
 }

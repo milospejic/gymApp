@@ -35,7 +35,7 @@ namespace Backend.Data.Context
                     AdminSurname = "Petrovic",
                     AdminPhone = "0649459884",
                     AdminEmail = "petar@example.com",
-                    AdminPassword = "petar123" 
+                    AdminHashedPassword = "petar123" 
 
                 }
             );
@@ -45,7 +45,6 @@ namespace Backend.Data.Context
                     PlanID = Guid.Parse("b1780029-6d8d-45cc-ab53-e3d20433007b"),
                     PlanName = "Standard",
                     PlanDescription = "Gym for 30 days",
-                    PlanDuration = "30",
                     PlanPrice = 30,
                     AdminID = Guid.Parse("c95a5ea7-0956-49d4-8047-68b49ad54fdc")
 
@@ -55,7 +54,6 @@ namespace Backend.Data.Context
                     PlanID = Guid.Parse("87272d68-35fd-4bf5-af55-5f0daa5bada8"),
                     PlanName = "Silver",
                     PlanDescription = "Gym + Spa for 30 days",
-                    PlanDuration = "30",
                     PlanPrice = 45,
                     AdminID = Guid.Parse("c95a5ea7-0956-49d4-8047-68b49ad54fdc")
 
@@ -68,7 +66,10 @@ namespace Backend.Data.Context
                     MembershipID = Guid.Parse("48923344-0974-45f1-8d72-25030d19437e"),
                     MembershipFrom = new DateTime(2025, 2, 21),
                     MembershipTo = new DateTime(2025, 3, 21),
-                    MembershipStatus = "Ongoing",
+                    MembershipStatus = "Active",
+                    PlanDuration = Enums.Duration.OneMonth,
+                    MembershipFee = 30,
+                    IsFeePaid = false,
                     MembershipPlanID = Guid.Parse("b1780029-6d8d-45cc-ab53-e3d20433007b")
                 },
                 new Membership
@@ -76,7 +77,10 @@ namespace Backend.Data.Context
                     MembershipID = Guid.Parse("ac6e2085-57ec-4c1e-a34c-42408b9daebe"),
                     MembershipFrom = new DateTime(2025, 2, 19),
                     MembershipTo = new DateTime(2025, 3, 19),
-                    MembershipStatus = "Ongoing",
+                    MembershipStatus = "Active",
+                    PlanDuration = Enums.Duration.OneMonth,
+                    MembershipFee = 30,
+                    IsFeePaid = false,
                     MembershipPlanID = Guid.Parse("b1780029-6d8d-45cc-ab53-e3d20433007b")
 
                 }
@@ -90,7 +94,7 @@ namespace Backend.Data.Context
                     MemberSurname = "Jovanovic",
                     MemberPhone = "0648751234",
                     MemberEmail = "jovan@example.com",
-                    MemberPassword = "jovan123",
+                    MemberHashedPassword = "jovan123",
                     MembershipID = Guid.Parse("48923344-0974-45f1-8d72-25030d19437e")
 
                 },
@@ -101,7 +105,7 @@ namespace Backend.Data.Context
                     MemberSurname = "Lukic",
                     MemberPhone = "0645731988",
                     MemberEmail = "masa@example.com",
-                    MemberPassword = "masa1234",
+                    MemberHashedPassword = "masa1234",
                     MembershipID = Guid.Parse("ac6e2085-57ec-4c1e-a34c-42408b9daebe")
 
                 }

@@ -2,6 +2,7 @@
 using Backend.Dto.BasicDtos;
 using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
+using Backend.Dto.UpdateDtos.Backend.Dto.UpdateDtos;
 using Backend.Entities;
 
 namespace Backend.Profiles

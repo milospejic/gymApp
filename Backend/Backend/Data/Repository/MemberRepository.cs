@@ -31,9 +31,11 @@ namespace Backend.Data.Repository
             return mapper.Map<MemberDto>(member);
         }
 
-        public async Task<MemberDto> CreateMember(MemberCreateDto memberDto)
+        public async Task<MemberDto> CreateMember(MemberCreateDto memberDto, Guid membershipId)
         {
             var member = mapper.Map<Member>(memberDto);
+            member.MemberId= Guid.NewGuid();
+            member.MembershipID = membershipId;
             context.Members.Add(member);
             await context.SaveChangesAsync();
             return mapper.Map<MemberDto>(member);
@@ -58,8 +60,23 @@ namespace Backend.Data.Repository
             {
                 throw new ArgumentException("Member not found");
             }
-
+            context.Memberships.Remove(context.Memberships.Find(member.MembershipID));
             context.Members.Remove(member);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task ChangeMemberPassword(Guid id, PasswordUpdateDto passwordUpdateDto)
+        {
+            var member = await context.Members.FindAsync(id);
+            if (member == null)
+            {
+                throw new ArgumentException("Member not found");
+            }
+            if (member.MemberHashedPassword != passwordUpdateDto.CurrentPassword)
+            {
+                throw new ArgumentException("Current password is wrong");
+            }
+            member.MemberHashedPassword = passwordUpdateDto.NewPassword;
             await context.SaveChangesAsync();
         }
     }
