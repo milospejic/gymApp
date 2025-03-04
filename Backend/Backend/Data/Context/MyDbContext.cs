@@ -27,6 +27,33 @@ namespace Backend.Data.Context
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            
+            modelBuilder.Entity<Member>()
+                .HasOne(m => m.Membership)
+                .WithMany()
+                .HasForeignKey(m => m.MembershipID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Membership>()
+                .HasOne(m => m.MembershipPlan)
+                .WithMany()
+                .HasForeignKey(m => m.MembershipPlanID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MembershipPlan>()
+                .HasOne(mp => mp.Admin)
+                .WithMany()
+                .HasForeignKey(mp => mp.AdminID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Admin>()
+                .HasIndex(a => a.AdminEmail)
+                .IsUnique();
+
+            modelBuilder.Entity<Member>()
+                .HasIndex(m => m.MemberEmail)
+                .IsUnique();
+
             modelBuilder.Entity<Admin>().HasData(
                 new Admin
                 {
@@ -35,7 +62,7 @@ namespace Backend.Data.Context
                     AdminSurname = "Petrovic",
                     AdminPhone = "0649459884",
                     AdminEmail = "petar@example.com",
-                    AdminHashedPassword = "petar123" 
+                    AdminHashedPassword = "Petar123!" 
 
                 }
             );
@@ -44,7 +71,7 @@ namespace Backend.Data.Context
                 {
                     PlanID = Guid.Parse("b1780029-6d8d-45cc-ab53-e3d20433007b"),
                     PlanName = "Standard",
-                    PlanDescription = "Gym for 30 days",
+                    PlanDescription = "Gym",
                     PlanPrice = 30,
                     AdminID = Guid.Parse("c95a5ea7-0956-49d4-8047-68b49ad54fdc")
 
@@ -53,7 +80,7 @@ namespace Backend.Data.Context
                 {
                     PlanID = Guid.Parse("87272d68-35fd-4bf5-af55-5f0daa5bada8"),
                     PlanName = "Silver",
-                    PlanDescription = "Gym + Spa for 30 days",
+                    PlanDescription = "Gym + Spa",
                     PlanPrice = 45,
                     AdminID = Guid.Parse("c95a5ea7-0956-49d4-8047-68b49ad54fdc")
 
@@ -94,7 +121,7 @@ namespace Backend.Data.Context
                     MemberSurname = "Jovanovic",
                     MemberPhone = "0648751234",
                     MemberEmail = "jovan@example.com",
-                    MemberHashedPassword = "jovan123",
+                    MemberHashedPassword = "Jovan123!",
                     MembershipID = Guid.Parse("48923344-0974-45f1-8d72-25030d19437e")
 
                 },
@@ -105,7 +132,7 @@ namespace Backend.Data.Context
                     MemberSurname = "Lukic",
                     MemberPhone = "0645731988",
                     MemberEmail = "masa@example.com",
-                    MemberHashedPassword = "masa1234",
+                    MemberHashedPassword = "Masa123!",
                     MembershipID = Guid.Parse("ac6e2085-57ec-4c1e-a34c-42408b9daebe")
 
                 }

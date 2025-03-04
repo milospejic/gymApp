@@ -8,5 +8,6 @@
         public string MemberEmail { get; set; }
         public string MemberPhone { get; set; }
         public Guid MembershipId { get; set; }
+        public MembershipDto Membership { get; set; }
     }
 }

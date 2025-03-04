@@ -10,7 +10,8 @@ namespace Backend.Profiles
     {
         public MembershipProfile()
         {
-            CreateMap<Membership, MembershipDto>();
+            CreateMap<Membership, MembershipDto>()
+            .ForMember(dest => dest.MembershipPlan, opt => opt.MapFrom(src => src.MembershipPlan));
             CreateMap<MembershipDto, Membership>();
             CreateMap<MembershipCreateDto, Membership>();
             CreateMap<MembershipUpdateDto, Membership>();

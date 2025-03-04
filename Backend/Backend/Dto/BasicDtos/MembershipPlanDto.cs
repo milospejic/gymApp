@@ -6,6 +6,7 @@
         public string PlanName { get; set; }
         public string PlanDescription { get; set; }
         public double PlanPrice { get; set; }
-        public Guid AdminId { get; set; }
+        public AdminDto Admin { get; set; }
+
     }
 }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20250303192533_InitialMigration")]
+    [Migration("20250304105740_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -33,25 +33,36 @@ namespace Backend.Migrations
 
                     b.Property<string>("AdminEmail")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("AdminHashedPassword")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("AdminName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("AdminPhone")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("AdminSurname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("AdminId");
+
+                    b.HasIndex("AdminEmail")
+                        .IsUnique();
+
+                    b.HasIndex(new[] { "AdminEmail" }, "IX_Admin_Email_Unique")
+                        .IsUnique();
 
                     b.ToTable("Admins");
 
@@ -60,7 +71,7 @@ namespace Backend.Migrations
                         {
                             AdminId = new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"),
                             AdminEmail = "petar@example.com",
-                            AdminHashedPassword = "petar123",
+                            AdminHashedPassword = "Petar123!",
                             AdminName = "Petar",
                             AdminPhone = "0649459884",
                             AdminSurname = "Petrovic"
@@ -75,28 +86,41 @@ namespace Backend.Migrations
 
                     b.Property<string>("MemberEmail")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("MemberHashedPassword")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("MemberName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("MemberPhone")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("MemberSurname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid>("MembershipID")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("MemberId");
+
+                    b.HasIndex("MemberEmail")
+                        .IsUnique();
+
+                    b.HasIndex("MembershipID");
+
+                    b.HasIndex(new[] { "MemberEmail" }, "IX_Member_Email_Unique")
+                        .IsUnique();
 
                     b.ToTable("Members");
 
@@ -105,7 +129,7 @@ namespace Backend.Migrations
                         {
                             MemberId = new Guid("d8b84401-eba8-4a64-9f19-23f3344e0e82"),
                             MemberEmail = "jovan@example.com",
-                            MemberHashedPassword = "jovan123",
+                            MemberHashedPassword = "Jovan123!",
                             MemberName = "Jovan",
                             MemberPhone = "0648751234",
                             MemberSurname = "Jovanovic",
@@ -115,7 +139,7 @@ namespace Backend.Migrations
                         {
                             MemberId = new Guid("f88f5b24-d669-49e3-b21b-072a50c08bc3"),
                             MemberEmail = "masa@example.com",
-                            MemberHashedPassword = "masa1234",
+                            MemberHashedPassword = "Masa123!",
                             MemberName = "Masa",
                             MemberPhone = "0645731988",
                             MemberSurname = "Lukic",
@@ -143,7 +167,8 @@ namespace Backend.Migrations
 
                     b.Property<string>("MembershipStatus")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("MembershipTo")
                         .HasColumnType("datetime2");
@@ -152,6 +177,8 @@ namespace Backend.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("MembershipID");
+
+                    b.HasIndex("MembershipPlanID");
 
                     b.ToTable("Memberships");
 
@@ -191,16 +218,23 @@ namespace Backend.Migrations
 
                     b.Property<string>("PlanDescription")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("PlanName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<double>("PlanPrice")
                         .HasColumnType("float");
 
                     b.HasKey("PlanID");
+
+                    b.HasIndex("AdminID");
+
+                    b.HasIndex(new[] { "PlanName" }, "IX_Plan_Name_Unique")
+                        .IsUnique();
 
                     b.ToTable("MembershipPlans");
 
@@ -209,7 +243,7 @@ namespace Backend.Migrations
                         {
                             PlanID = new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"),
                             AdminID = new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"),
-                            PlanDescription = "Gym for 30 days",
+                            PlanDescription = "Gym",
                             PlanName = "Standard",
                             PlanPrice = 30.0
                         },
@@ -217,10 +251,43 @@ namespace Backend.Migrations
                         {
                             PlanID = new Guid("87272d68-35fd-4bf5-af55-5f0daa5bada8"),
                             AdminID = new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"),
-                            PlanDescription = "Gym + Spa for 30 days",
+                            PlanDescription = "Gym + Spa",
                             PlanName = "Silver",
                             PlanPrice = 45.0
                         });
+                });
+
+            modelBuilder.Entity("Backend.Entities.Member", b =>
+                {
+                    b.HasOne("Backend.Entities.Membership", "Membership")
+                        .WithMany()
+                        .HasForeignKey("MembershipID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Membership");
+                });
+
+            modelBuilder.Entity("Backend.Entities.Membership", b =>
+                {
+                    b.HasOne("Backend.Entities.MembershipPlan", "MembershipPlan")
+                        .WithMany()
+                        .HasForeignKey("MembershipPlanID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MembershipPlan");
+                });
+
+            modelBuilder.Entity("Backend.Entities.MembershipPlan", b =>
+                {
+                    b.HasOne("Backend.Entities.Admin", "Admin")
+                        .WithMany()
+                        .HasForeignKey("AdminID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Admin");
                 });
 #pragma warning restore 612, 618
         }

@@ -69,7 +69,7 @@ namespace Backend.Controllers
             try
             {
                 await membershipPlanRepository.UpdateMembershipPlan(id, membershipPlanDto);
-                return Ok();
+                return Ok("Successfully updated membership plan!");
             }
             catch (ArgumentException ex)
             {

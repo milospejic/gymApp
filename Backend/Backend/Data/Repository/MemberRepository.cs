@@ -21,13 +21,21 @@ namespace Backend.Data.Repository
         }
         public async Task<IEnumerable<MemberDto>> GetAllMembers()
         {
-            var members = await context.Members.ToListAsync();
+            var members = await context.Members
+                .Include(m => m.Membership)
+                    .ThenInclude(ms => ms.MembershipPlan)
+                    .ThenInclude(ma => ma.Admin)
+                    .ToListAsync();
             return mapper.Map<IEnumerable<MemberDto>>(members);
         }
 
         public async Task<MemberDto> GetMemberById(Guid id)
         {
-            var member = await context.Members.FindAsync(id);
+            var member = await context.Members
+                .Include(m => m.Membership)
+                .ThenInclude(ms => ms.MembershipPlan)
+                .ThenInclude(ma => ma.Admin)
+                    .FirstOrDefaultAsync(m => m.MemberId == id);
             return mapper.Map<MemberDto>(member);
         }
 
@@ -36,6 +44,8 @@ namespace Backend.Data.Repository
             var member = mapper.Map<Member>(memberDto);
             member.MemberId= Guid.NewGuid();
             member.MembershipID = membershipId;
+            member.Membership = await context.Memberships.FindAsync(membershipId);
+            member.Membership.MembershipPlan.Admin = await context.Admins.FindAsync(member.Membership.MembershipPlan.AdminID);
             context.Members.Add(member);
             await context.SaveChangesAsync();
             return mapper.Map<MemberDto>(member);

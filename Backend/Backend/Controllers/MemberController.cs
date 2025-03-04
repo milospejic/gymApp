@@ -56,15 +56,21 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Guid>> CreateMember(MemberCreateDto memberDto)
         {
+            string here = "1";
             try
             {
                 var membership = await membershipRepository.CreateMembership(memberDto.Membership);
+                here = "2";
                 var member = await memberRepository.CreateMember(memberDto, membership.MembershipID);
+                here = "3";
                 return Ok(member);
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
+            }catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error: " + here);
             }
         }
 
@@ -78,7 +84,7 @@ namespace Backend.Controllers
             try
             {
                 await memberRepository.UpdateMember(id, memberDto);
-                return Ok();
+                return Ok("Successfully updated member!");
             }
             catch (ArgumentException ex)
             {

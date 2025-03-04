@@ -11,6 +11,6 @@ namespace Backend.Dto.BasicDtos
         public Duration PlanDuration { get; set; }
         public double MembershipFee { get; set; }
         public Boolean IsFeePaid { get; set; }
-        public Guid MembershipPlanId { get; set; }
+        public MembershipPlanDto MembershipPlan { get; set; }
     }
 }

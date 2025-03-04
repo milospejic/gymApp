@@ -24,13 +24,19 @@ namespace Backend.Data.Repository
         }
         public async Task<IEnumerable<MembershipDto>> GetAllMemberships()
         {
-            var memberships = await context.Memberships.ToListAsync();
+            var memberships = await context.Memberships
+                 .Include(m => m.MembershipPlan)
+                 .ThenInclude(ms => ms.Admin)
+                 .ToListAsync();
             return mapper.Map<IEnumerable<MembershipDto>>(memberships);
         }
 
         public async Task<MembershipDto> GetMembershipById(Guid id)
         {
-            var membership = await context.Memberships.FindAsync(id);
+            var membership = await context.Memberships
+                .Include(m => m.MembershipPlan)
+                .ThenInclude(ma => ma.Admin)
+                .FirstOrDefaultAsync(ms => ms.MembershipID == id);
             return mapper.Map<MembershipDto>(membership);
         }
 
@@ -68,6 +74,7 @@ namespace Backend.Data.Repository
                     break;
             }
             membership.IsFeePaid = false;
+            
             context.Memberships.Add(membership);
             await context.SaveChangesAsync();
             return mapper.Map<MembershipDto>(membership);

@@ -77,7 +77,7 @@ namespace Backend.Controllers
             try
             {
                 await adminRepository.UpdateAdmin(id, adminDto);
-                return Ok();
+                return Ok("Admin updated!");
             }
             catch (ArgumentException ex)
             {
