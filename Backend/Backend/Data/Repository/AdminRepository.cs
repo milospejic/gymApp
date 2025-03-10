@@ -6,6 +6,7 @@ using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
 using Backend.Dto.UpdateDtos.Backend.Dto.UpdateDtos;
 using Backend.Entities;
+using Backend.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Data.Repository
@@ -36,6 +37,7 @@ namespace Backend.Data.Repository
         {
             var admin = mapper.Map<Admin>(adminDto);
             admin.AdminId = Guid.NewGuid();
+            admin.AdminHashedPassword = PasswordHasher.HashPassword(adminDto.AdminHashedPassword);
             context.Admins.Add(admin);
             await context.SaveChangesAsync();
             return mapper.Map<AdminDto>(admin);
@@ -72,11 +74,11 @@ namespace Backend.Data.Repository
             {
                 throw new ArgumentException("Admin not found");
             }
-            if(admin.AdminHashedPassword != passwordUpdateDto.CurrentPassword)
+            if(PasswordHasher.VerifyPassword(passwordUpdateDto.CurrentPassword, admin.AdminHashedPassword))
             {
                 throw new ArgumentException("Current password is wrong");
             }
-            admin.AdminHashedPassword = passwordUpdateDto.NewPassword;
+            admin.AdminHashedPassword = PasswordHasher.HashPassword(passwordUpdateDto.NewPassword);
             await context.SaveChangesAsync();
         }
     }

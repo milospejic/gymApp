@@ -5,6 +5,7 @@ using Backend.Dto.BasicDtos;
 using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
 using Backend.Entities;
+using Backend.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Data.Repository
@@ -44,6 +45,7 @@ namespace Backend.Data.Repository
             var member = mapper.Map<Member>(memberDto);
             member.MemberId= Guid.NewGuid();
             member.MembershipID = membershipId;
+            member.MemberHashedPassword = PasswordHasher.HashPassword(memberDto.MemberHashedPassword);
             member.Membership = await context.Memberships.FindAsync(membershipId);
             member.Membership.MembershipPlan.Admin = await context.Admins.FindAsync(member.Membership.MembershipPlan.AdminID);
             context.Members.Add(member);
@@ -82,11 +84,11 @@ namespace Backend.Data.Repository
             {
                 throw new ArgumentException("Member not found");
             }
-            if (member.MemberHashedPassword != passwordUpdateDto.CurrentPassword)
+            if (PasswordHasher.VerifyPassword(passwordUpdateDto.CurrentPassword, member.MemberHashedPassword))
             {
                 throw new ArgumentException("Current password is wrong");
             }
-            member.MemberHashedPassword = passwordUpdateDto.NewPassword;
+            member.MemberHashedPassword = PasswordHasher.HashPassword(passwordUpdateDto.NewPassword);
             await context.SaveChangesAsync();
         }
     }

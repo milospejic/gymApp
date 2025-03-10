@@ -1,4 +1,5 @@
 ﻿using Backend.Entities;
+using Backend.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -62,7 +63,7 @@ namespace Backend.Data.Context
                     AdminSurname = "Petrovic",
                     AdminPhone = "0649459884",
                     AdminEmail = "petar@example.com",
-                    AdminHashedPassword = "Petar123!" 
+                    AdminHashedPassword = "$2a$10$CumaLEDEtSsYhcXDZPOnnOxu7.xxZco7ViMg.7m6mFeRkAe4sGzCS"
 
                 }
             );
@@ -121,7 +122,7 @@ namespace Backend.Data.Context
                     MemberSurname = "Jovanovic",
                     MemberPhone = "0648751234",
                     MemberEmail = "jovan@example.com",
-                    MemberHashedPassword = "Jovan123!",
+                    MemberHashedPassword = "$2a$10$rOVEpsrnqQYlzpRizY/.XOGfB7ztiqocgS6F3sxQeumTxRWQHWRja",
                     MembershipID = Guid.Parse("48923344-0974-45f1-8d72-25030d19437e")
 
                 },
@@ -132,7 +133,7 @@ namespace Backend.Data.Context
                     MemberSurname = "Lukic",
                     MemberPhone = "0645731988",
                     MemberEmail = "masa@example.com",
-                    MemberHashedPassword = "Masa123!",
+                    MemberHashedPassword = "$2a$10$auEZi85mbEUQ.UwxAg3aN.CBE.of6yvuMrFNsYtYJE9WBZFFmteHa",
                     MembershipID = Guid.Parse("ac6e2085-57ec-4c1e-a34c-42408b9daebe")
 
                 }

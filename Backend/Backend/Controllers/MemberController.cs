@@ -3,6 +3,7 @@ using Backend.Data.IRepository;
 using Backend.Dto.BasicDtos;
 using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -22,7 +23,7 @@ namespace Backend.Controllers
             this.mapper = mapper;
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -36,6 +37,8 @@ namespace Backend.Controllers
             return Ok(members);
         }
 
+
+        [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -50,6 +53,7 @@ namespace Backend.Controllers
             return Ok(member);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -74,7 +78,7 @@ namespace Backend.Controllers
             }
         }
 
-
+        [Authorize(Roles = "User")]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -92,6 +96,7 @@ namespace Backend.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -115,6 +120,7 @@ namespace Backend.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpPatch]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]

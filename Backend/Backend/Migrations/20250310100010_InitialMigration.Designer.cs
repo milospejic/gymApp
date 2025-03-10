@@ -4,6 +4,7 @@ using Backend.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250310100010_InitialMigration")]
+    partial class InitialMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,7 +71,7 @@ namespace Backend.Migrations
                         {
                             AdminId = new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"),
                             AdminEmail = "petar@example.com",
-                            AdminHashedPassword = "$2a$10$CumaLEDEtSsYhcXDZPOnnOxu7.xxZco7ViMg.7m6mFeRkAe4sGzCS",
+                            AdminHashedPassword = "Petar123!",
                             AdminName = "Petar",
                             AdminPhone = "0649459884",
                             AdminSurname = "Petrovic"
@@ -126,7 +129,7 @@ namespace Backend.Migrations
                         {
                             MemberId = new Guid("d8b84401-eba8-4a64-9f19-23f3344e0e82"),
                             MemberEmail = "jovan@example.com",
-                            MemberHashedPassword = "$2a$10$rOVEpsrnqQYlzpRizY/.XOGfB7ztiqocgS6F3sxQeumTxRWQHWRja",
+                            MemberHashedPassword = "Jovan123!",
                             MemberName = "Jovan",
                             MemberPhone = "0648751234",
                             MemberSurname = "Jovanovic",
@@ -136,7 +139,7 @@ namespace Backend.Migrations
                         {
                             MemberId = new Guid("f88f5b24-d669-49e3-b21b-072a50c08bc3"),
                             MemberEmail = "masa@example.com",
-                            MemberHashedPassword = "$2a$10$auEZi85mbEUQ.UwxAg3aN.CBE.of6yvuMrFNsYtYJE9WBZFFmteHa",
+                            MemberHashedPassword = "Masa123!",
                             MemberName = "Masa",
                             MemberPhone = "0645731988",
                             MemberSurname = "Lukic",

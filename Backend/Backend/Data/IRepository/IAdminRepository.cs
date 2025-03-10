@@ -13,5 +13,6 @@ namespace Backend.Data.IRepository
         Task UpdateAdmin(Guid adminId, AdminUpdateDto adminDto);
         Task DeleteAdmin(Guid adminId);
         Task ChangeAdminPassword(Guid adminId, PasswordUpdateDto passwordUpdateDto);
+
     }
 }
