@@ -43,8 +43,12 @@ namespace Backend.Data.Repository
             return mapper.Map<AdminDto>(admin);
         }
 
-        public async Task UpdateAdmin(Guid id, AdminUpdateDto adminDto)
+        public async Task UpdateAdmin(Guid? id, AdminUpdateDto adminDto)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id), "ID cannot be null");
+            }
             var admin = await context.Admins.FindAsync(id);
             if (admin == null)
             {
@@ -55,8 +59,12 @@ namespace Backend.Data.Repository
             await context.SaveChangesAsync();
         }
 
-        public async Task DeleteAdmin(Guid id)
+        public async Task DeleteAdmin(Guid? id)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id), "ID cannot be null");
+            }
             var admin = await context.Admins.FindAsync(id);
             if (admin == null)
             {
@@ -67,21 +75,30 @@ namespace Backend.Data.Repository
             await context.SaveChangesAsync();
         }
 
-        public async Task ChangeAdminPassword(Guid id, PasswordUpdateDto passwordUpdateDto)
+        public async Task ChangeAdminPassword(Guid? id, PasswordUpdateDto passwordUpdateDto)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id), "ID cannot be null");
+            }
+
             var admin = await context.Admins.FindAsync(id);
             if (admin == null)
             {
                 throw new ArgumentException("Admin not found");
             }
-            if(PasswordHasher.VerifyPassword(passwordUpdateDto.CurrentPassword, admin.AdminHashedPassword))
+
+        
+            if (!PasswordHasher.VerifyPassword(passwordUpdateDto.CurrentPassword, admin.AdminHashedPassword))
             {
                 throw new ArgumentException("Current password is wrong");
             }
+
             admin.AdminHashedPassword = PasswordHasher.HashPassword(passwordUpdateDto.NewPassword);
             await context.SaveChangesAsync();
         }
+
     }
 
-   
+
 }

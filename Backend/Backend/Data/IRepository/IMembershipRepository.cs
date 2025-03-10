@@ -7,9 +7,9 @@ namespace Backend.Data.IRepository
     public interface IMembershipRepository
     {
         Task<IEnumerable<MembershipDto>> GetAllMemberships();
-        Task<MembershipDto> GetMembershipById(Guid userId);
-        Task<MembershipDto> CreateMembership(MembershipCreateDto userDto);
-        Task UpdateMembership(Guid userId, MembershipUpdateDto userDto);
+        Task<MembershipDto> GetMembershipById(Guid membershipId);
+        Task<MembershipDto> CreateMembership(MembershipCreateDto membershipCreateDto);
+        Task UpdateMembership(Guid? membershipId, MembershipUpdateDto membershipUpdateDto);
 
     }
 }

@@ -7,6 +7,7 @@ using Backend.Dto.UpdateDtos;
 using Backend.Dto.UpdateDtos.Backend.Dto.UpdateDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Backend.Controllers
 {
@@ -22,7 +23,7 @@ namespace Backend.Controllers
             this.adminRepository = adminRepository;
             this.mapper = mapper;
         }
-
+       
         [Authorize(Roles = "Admin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -51,7 +52,7 @@ namespace Backend.Controllers
 
             return Ok(admin);
         }
-
+       
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [Consumes("application/json")]
@@ -69,17 +70,24 @@ namespace Backend.Controllers
             }
         }
 
+       
 
+      
         [Authorize(Roles = "Admin")]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateAdmin(Guid id, AdminUpdateDto adminDto)
+        public async Task<IActionResult> UpdateAdmin([FromBody] AdminUpdateDto adminDto)
         {
             try
             {
-                await adminRepository.UpdateAdmin(id, adminDto);
+                var authenticatedAdminId = GetAuthenticatedAdminId();
+                if (authenticatedAdminId == null)
+                    return Unauthorized("Invalid token");
+
+                await adminRepository.UpdateAdmin(authenticatedAdminId, adminDto);
                 return Ok("Admin updated!");
             }
             catch (ArgumentException ex)
@@ -92,13 +100,17 @@ namespace Backend.Controllers
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteAdmin(Guid id)
+        public async Task<IActionResult> DeleteAdmin()
         {
-
             try
             {
-                await adminRepository.DeleteAdmin(id);
+                var authenticatedAdminId = GetAuthenticatedAdminId();
+                if (authenticatedAdminId == null)
+                    return Unauthorized("Invalid token");
+
+                await adminRepository.DeleteAdmin(authenticatedAdminId);
                 return NoContent();
             }
             catch (ArgumentException ex)
@@ -111,18 +123,37 @@ namespace Backend.Controllers
         [HttpPatch]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ChangeAdminPassword(Guid id, PasswordUpdateDto passwordUpdateDto)
+        public async Task<IActionResult> ChangeAdminPassword([FromBody] PasswordUpdateDto passwordUpdateDto)
         {
             try
             {
-                await adminRepository.ChangeAdminPassword(id, passwordUpdateDto);
+                var authenticatedAdminId = GetAuthenticatedAdminId();
+                if (authenticatedAdminId == null)
+                    return Unauthorized("Invalid token");
+
+                await adminRepository.ChangeAdminPassword(authenticatedAdminId, passwordUpdateDto);
                 return Ok("Password updated!");
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+
+        private Guid? GetAuthenticatedAdminId()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var userIdClaim = identity?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (Guid.TryParse(userIdClaim, out Guid authenticatedAdminId))
+            {
+                return authenticatedAdminId;
+            }
+
+            return null;
         }
     }
 }

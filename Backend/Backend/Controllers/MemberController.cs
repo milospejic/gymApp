@@ -5,6 +5,7 @@ using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Backend.Controllers
 {
@@ -38,7 +39,7 @@ namespace Backend.Controllers
         }
 
 
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,Member")]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -52,7 +53,7 @@ namespace Backend.Controllers
 
             return Ok(member);
         }
-
+        
         [AllowAnonymous]
         [HttpPost]
         [Consumes("application/json")]
@@ -60,13 +61,10 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Guid>> CreateMember(MemberCreateDto memberDto)
         {
-            string here = "1";
             try
             {
                 var membership = await membershipRepository.CreateMembership(memberDto.Membership);
-                here = "2";
                 var member = await memberRepository.CreateMember(memberDto, membership.MembershipID);
-                here = "3";
                 return Ok(member);
             }
             catch (ArgumentException ex)
@@ -74,20 +72,26 @@ namespace Backend.Controllers
                 return BadRequest(ex.Message);
             }catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error: " + here);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error: " + ex.Message);
             }
         }
 
-        [Authorize(Roles = "User")]
+
+        [Authorize(Roles = "Member")]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateMember(Guid id, MemberUpdateDto memberDto)
+        public async Task<IActionResult> UpdateMember([FromBody] MemberUpdateDto memberDto)
         {
             try
             {
-                await memberRepository.UpdateMember(id, memberDto);
+                var authenticatedUserId = GetAuthenticatedUserId();
+                if (authenticatedUserId == null)
+                    return Unauthorized("Invalid token");
+
+                await memberRepository.UpdateMember(authenticatedUserId, memberDto);
                 return Ok("Successfully updated member!");
             }
             catch (ArgumentException ex)
@@ -96,22 +100,27 @@ namespace Backend.Controllers
             }
         }
 
-        [Authorize(Roles = "User")]
-        [HttpDelete]
+        [Authorize(Roles = "Member")]
+        [HttpDelete] 
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteMember(Guid id)
+        public async Task<IActionResult> DeleteMember()
         {
-
             try
             {
-                var member = await memberRepository.GetMemberById(id);
+                var authenticatedUserId = GetAuthenticatedUserId();
+                if (authenticatedUserId == null)
+                    return Unauthorized("Invalid token");
+
+                var member = await memberRepository.GetMemberById(authenticatedUserId);
                 if (member == null)
                 {
-                    return NotFound("There is no member with id: " + id);
+                    return NotFound($"There is no member with id: {authenticatedUserId}");
                 }
-                await memberRepository.DeleteMember(id);
+
+                await memberRepository.DeleteMember(authenticatedUserId);
                 return NoContent();
             }
             catch (ArgumentException ex)
@@ -120,16 +129,21 @@ namespace Backend.Controllers
             }
         }
 
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "Member")]
         [HttpPatch]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ChangeMemberPassword(Guid id, PasswordUpdateDto passwordUpdateDto)
+        public async Task<IActionResult> ChangeMemberPassword([FromBody] PasswordUpdateDto passwordUpdateDto)
         {
             try
             {
-                await memberRepository.ChangeMemberPassword(id, passwordUpdateDto);
+                var authenticatedUserId = GetAuthenticatedUserId();
+                if (authenticatedUserId == null)
+                    return Unauthorized("Invalid token");
+
+                await memberRepository.ChangeMemberPassword(authenticatedUserId, passwordUpdateDto);
                 return Ok("Password updated!");
             }
             catch (ArgumentException ex)
@@ -137,5 +151,20 @@ namespace Backend.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+   
+        private Guid? GetAuthenticatedUserId()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var userIdClaim = identity?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (Guid.TryParse(userIdClaim, out Guid authenticatedUserId))
+            {
+                return authenticatedUserId;
+            }
+
+            return null;
+        }
+
     }
 }

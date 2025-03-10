@@ -30,8 +30,12 @@ namespace Backend.Data.Repository
             return mapper.Map<IEnumerable<MemberDto>>(members);
         }
 
-        public async Task<MemberDto> GetMemberById(Guid id)
+        public async Task<MemberDto> GetMemberById(Guid? id)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id), "ID cannot be null");
+            }
             var member = await context.Members
                 .Include(m => m.Membership)
                 .ThenInclude(ms => ms.MembershipPlan)
@@ -53,8 +57,12 @@ namespace Backend.Data.Repository
             return mapper.Map<MemberDto>(member);
         }
 
-        public async Task UpdateMember(Guid id, MemberUpdateDto memberDto)
+        public async Task UpdateMember(Guid? id, MemberUpdateDto memberDto)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id), "ID cannot be null");
+            }
             var member = await context.Members.FindAsync(id);
             if (member == null)
             {
@@ -65,26 +73,35 @@ namespace Backend.Data.Repository
             await context.SaveChangesAsync();
         }
 
-        public async Task DeleteMember(Guid id)
+        public async Task DeleteMember(Guid? id)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id), "ID cannot be null");
+            }
             var member = await context.Members.FindAsync(id);
             if (member == null)
             {
                 throw new ArgumentException("Member not found");
             }
-            context.Memberships.Remove(context.Memberships.Find(member.MembershipID));
+            var memberhip = await context.Memberships.FindAsync(member.MembershipID);
             context.Members.Remove(member);
+            context.Memberships.Remove(memberhip);
             await context.SaveChangesAsync();
         }
 
-        public async Task ChangeMemberPassword(Guid id, PasswordUpdateDto passwordUpdateDto)
+        public async Task ChangeMemberPassword(Guid? id, PasswordUpdateDto passwordUpdateDto)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id), "ID cannot be null");
+            }
             var member = await context.Members.FindAsync(id);
             if (member == null)
             {
                 throw new ArgumentException("Member not found");
             }
-            if (PasswordHasher.VerifyPassword(passwordUpdateDto.CurrentPassword, member.MemberHashedPassword))
+            if (!PasswordHasher.VerifyPassword(passwordUpdateDto.CurrentPassword, member.MemberHashedPassword))
             {
                 throw new ArgumentException("Current password is wrong");
             }

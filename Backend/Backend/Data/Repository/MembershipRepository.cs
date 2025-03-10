@@ -80,13 +80,22 @@ namespace Backend.Data.Repository
             return mapper.Map<MembershipDto>(membership);
         }
 
-        public async Task UpdateMembership(Guid id, MembershipUpdateDto membershipDto)
+        public async Task UpdateMembership(Guid? id, MembershipUpdateDto membershipDto)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id), "ID cannot be null");
+            }
             var membership = await context.Memberships.FindAsync(id);
             if (membership == null)
             {
                 throw new ArgumentException("Membership not found");
             }
+            if (membership.MembershipTo > DateTime.Now)
+            {
+                throw new ArgumentException("You cannot renew membership because you still have an active one.");
+            }
+
             var plan = await context.MembershipPlans.FindAsync(membershipDto.MembershipPlanID);
             if (plan == null) {
                 throw new ArgumentException("Plan not found");
@@ -120,6 +129,7 @@ namespace Backend.Data.Repository
       
             await context.SaveChangesAsync();
         }
+
 
     }
 }

@@ -1,13 +1,14 @@
 ﻿using Backend.Dto.BasicDtos;
+using Backend.Entities;
 
 namespace Backend.AuthHelp
 {
     public interface IAuthService
     {
-        string GenerateToken(string email, string role);
-        Task<bool> IsMember(LoginDto loginDto);
+        string GenerateToken(string email, string role, Guid id);
+        Task<Member> IsMember(LoginDto loginDto);
 
-        Task<bool> IsAdmin(LoginDto loginDto);
+        Task<Admin> IsAdmin(LoginDto loginDto);
 
     }
 }
