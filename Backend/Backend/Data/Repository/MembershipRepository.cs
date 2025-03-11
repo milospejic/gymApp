@@ -51,7 +51,6 @@ namespace Backend.Data.Repository
              
             var membership = mapper.Map<Membership>(membershipDto);
             membership.MembershipFrom = DateTime.Now;
-            membership.MembershipStatus = "Active";
             switch (membership.PlanDuration)
             {
                 case Duration.OneMonth:
@@ -103,7 +102,6 @@ namespace Backend.Data.Repository
             }
             mapper.Map(membershipDto, membership);
             membership.MembershipFrom = DateTime.Now;
-            membership.MembershipStatus = "Active";
             switch (membership.PlanDuration)
             {
                 case Duration.OneMonth:

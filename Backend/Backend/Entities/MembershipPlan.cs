@@ -23,9 +23,15 @@ namespace Backend.Entities
         public double PlanPrice { get; set; }
 
         [Required(ErrorMessage = "Admin ID is required")]
-        public Guid AdminID { get; set; }
+        public Guid? AdminID { get; set; }
+
+        [Required(ErrorMessage = "ForDeletion is required")]
+        public bool ForDeletion { get; set; }
 
         [ForeignKey("AdminID")]
         public virtual Admin Admin { get; set; }
+
+        public virtual ICollection<Membership> Memberships { get; set; } = new HashSet<Membership>();
+
     }
 }

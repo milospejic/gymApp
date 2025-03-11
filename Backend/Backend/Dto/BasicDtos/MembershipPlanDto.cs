@@ -1,4 +1,6 @@
-﻿namespace Backend.Dto.BasicDtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Backend.Dto.BasicDtos
 {
     public class MembershipPlanDto
     {
@@ -6,6 +8,7 @@
         public string PlanName { get; set; }
         public string PlanDescription { get; set; }
         public double PlanPrice { get; set; }
+        public bool ForDeletion { get; set; }
         public AdminDto Admin { get; set; }
 
     }

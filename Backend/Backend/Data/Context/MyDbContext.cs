@@ -74,6 +74,7 @@ namespace Backend.Data.Context
                     PlanName = "Standard",
                     PlanDescription = "Gym",
                     PlanPrice = 30,
+                    ForDeletion = false,
                     AdminID = Guid.Parse("c95a5ea7-0956-49d4-8047-68b49ad54fdc")
 
                 },
@@ -83,6 +84,7 @@ namespace Backend.Data.Context
                     PlanName = "Silver",
                     PlanDescription = "Gym + Spa",
                     PlanPrice = 45,
+                    ForDeletion = false,
                     AdminID = Guid.Parse("c95a5ea7-0956-49d4-8047-68b49ad54fdc")
 
                 }
@@ -94,7 +96,6 @@ namespace Backend.Data.Context
                     MembershipID = Guid.Parse("48923344-0974-45f1-8d72-25030d19437e"),
                     MembershipFrom = new DateTime(2025, 2, 21),
                     MembershipTo = new DateTime(2025, 3, 21),
-                    MembershipStatus = "Active",
                     PlanDuration = Enums.Duration.OneMonth,
                     MembershipFee = 30,
                     IsFeePaid = false,
@@ -105,13 +106,13 @@ namespace Backend.Data.Context
                     MembershipID = Guid.Parse("ac6e2085-57ec-4c1e-a34c-42408b9daebe"),
                     MembershipFrom = new DateTime(2025, 2, 19),
                     MembershipTo = new DateTime(2025, 3, 19),
-                    MembershipStatus = "Active",
                     PlanDuration = Enums.Duration.OneMonth,
                     MembershipFee = 30,
                     IsFeePaid = false,
                     MembershipPlanID = Guid.Parse("b1780029-6d8d-45cc-ab53-e3d20433007b")
 
                 }
+
             );
 
             modelBuilder.Entity<Member>().HasData(

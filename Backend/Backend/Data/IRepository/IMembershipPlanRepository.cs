@@ -8,8 +8,9 @@ namespace Backend.Data.IRepository
     {
         Task<IEnumerable<MembershipPlanDto>> GetAllMembershipPlans();
         Task<MembershipPlanDto> GetMembershipPlanById(Guid membershipPlanId);
-        Task<MembershipPlanDto> CreateMembershipPlan(MembershipPlanCreateDto membershipPlanCreateDto);
-        Task UpdateMembershipPlan(Guid membershipPlanId, MembershipPlanUpdateDto membershipPlanUpdateDto);
+        Task<MembershipPlanDto> CreateMembershipPlan(MembershipPlanCreateDto membershipPlanCreateDto, Guid? adminId);
+        Task UpdateMembershipPlan(Guid membershipPlanId, MembershipPlanUpdateDto membershipPlanUpdateDto, Guid? adminId);
         Task DeleteMembershipPlan(Guid membershipPlanId);
+        Task SetPlanFordDeletion(Guid id);
     }
 }

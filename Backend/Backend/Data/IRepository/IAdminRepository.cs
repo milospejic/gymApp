@@ -8,7 +8,7 @@ namespace Backend.Data.IRepository
     public interface IAdminRepository
     {
         Task<IEnumerable<AdminDto>> GetAllAdmins();
-        Task<AdminDto> GetAdminById(Guid adminId);
+        Task<AdminDto> GetAdminById(Guid? adminId);
         Task<AdminDto> CreateAdmin(AdminCreateDto adminDto);
         Task UpdateAdmin(Guid? adminId, AdminUpdateDto adminDto);
         Task DeleteAdmin(Guid? adminId);

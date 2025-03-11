@@ -27,8 +27,12 @@ namespace Backend.Data.Repository
             return mapper.Map<IEnumerable<AdminDto>>(admins);
         }
 
-        public async Task<AdminDto> GetAdminById(Guid id)
+        public async Task<AdminDto> GetAdminById(Guid? id)
         {
+            if(id == null)
+            {
+                throw new ArgumentNullException(nameof(id), "ID cannot be null");
+            }
             var admin = await context.Admins.FindAsync(id);
             return mapper.Map<AdminDto>(admin);
         }

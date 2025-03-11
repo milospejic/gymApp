@@ -6,6 +6,7 @@ using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Backend.Controllers
 {
@@ -59,7 +60,10 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Guid>> CreateMembershipPlan(MembershipPlanCreateDto membershipPlanDto)
         {
-            var membershipPlanId = await membershipPlanRepository.CreateMembershipPlan(membershipPlanDto);
+            var authenticatedAdminId = GetAuthenticatedAdminId();
+            if (authenticatedAdminId == null)
+                return Unauthorized("Invalid token");
+            var membershipPlanId = await membershipPlanRepository.CreateMembershipPlan(membershipPlanDto, authenticatedAdminId);
             return Ok(membershipPlanId);
         }
 
@@ -72,12 +76,18 @@ namespace Backend.Controllers
         {
             try
             {
-                await membershipPlanRepository.UpdateMembershipPlan(id, membershipPlanDto);
+                var authenticatedAdminId = GetAuthenticatedAdminId();
+                if (authenticatedAdminId == null)
+                    return Unauthorized("Invalid token");
+                await membershipPlanRepository.UpdateMembershipPlan(id, membershipPlanDto, authenticatedAdminId);
                 return Ok("Successfully updated membership plan!");
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
+            }catch(InvalidOperationException ex2)
+            {
+                return BadRequest(ex2.Message);
             }
         }
 
@@ -98,6 +108,47 @@ namespace Backend.Controllers
             {
                 return BadRequest(ex.Message);
             }
+            catch (InvalidOperationException ex2)
+            {
+                return BadRequest(ex2.Message);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, "An unexpected error occurred. Please try again later.");
+            }
+
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("setForDeletion")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SetForDeletion(Guid id)
+        {
+            try
+            {
+                await membershipPlanRepository.SetPlanFordDeletion(id);
+                return Ok("Successfully ser membership plan for deletion!");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        private Guid? GetAuthenticatedAdminId()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var userIdClaim = identity?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (Guid.TryParse(userIdClaim, out Guid authenticatedAdminId))
+            {
+                return authenticatedAdminId;
+            }
+
+            return null;
         }
     }
 }

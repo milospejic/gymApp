@@ -35,17 +35,18 @@ namespace Backend.Data.Repository
             return mapper.Map<MembershipPlanDto>(membershipPlan);
         }
 
-        public async Task<MembershipPlanDto> CreateMembershipPlan(MembershipPlanCreateDto membershipPlanDto)
+        public async Task<MembershipPlanDto> CreateMembershipPlan(MembershipPlanCreateDto membershipPlanDto, Guid? adminId)
         {
             var membershipPlan = mapper.Map<MembershipPlan>(membershipPlanDto);
             membershipPlan.PlanID = Guid.NewGuid();
-            membershipPlan.Admin = await context.Admins.FindAsync(membershipPlanDto.AdminID);
+            membershipPlan.AdminID = adminId;
+            membershipPlan.Admin = await context.Admins.FindAsync(adminId);
             context.MembershipPlans.Add(membershipPlan);
             await context.SaveChangesAsync();
             return mapper.Map<MembershipPlanDto>(membershipPlan);
         }
 
-        public async Task UpdateMembershipPlan(Guid id, MembershipPlanUpdateDto membershipPlanDto)
+        public async Task UpdateMembershipPlan(Guid id, MembershipPlanUpdateDto membershipPlanDto, Guid? adminId)
         {
             var membershipPlan = await context.MembershipPlans.FindAsync(id);
             if (membershipPlan == null)
@@ -54,10 +55,39 @@ namespace Backend.Data.Repository
             }
 
             mapper.Map(membershipPlanDto, membershipPlan);
+            membershipPlan.AdminID = adminId;
             await context.SaveChangesAsync();
         }
 
         public async Task DeleteMembershipPlan(Guid id)
+        {
+            var membershipPlan = await context.MembershipPlans
+                .Include(mp => mp.Memberships)
+                .FirstOrDefaultAsync(mp => mp.PlanID == id);
+
+            if (membershipPlan == null)
+            {
+                throw new ArgumentException("Membership plan not found");
+            }
+
+            if (!membershipPlan.ForDeletion)
+            {
+                throw new InvalidOperationException("Plan is not set for deletion");
+            }
+
+            // Check if there are active memberships first
+            if (membershipPlan.Memberships.Any(m => m.MembershipTo >= DateTime.Now))
+            {
+                throw new InvalidOperationException("There are still active memberships on this plan");
+            }
+
+            // Remove plan if no memberships exist or all are expired
+            context.MembershipPlans.Remove(membershipPlan);
+            await context.SaveChangesAsync();
+        }
+
+
+        public async Task SetPlanFordDeletion(Guid id)
         {
             var membershipPlan = await context.MembershipPlans.FindAsync(id);
             if (membershipPlan == null)
@@ -65,7 +95,7 @@ namespace Backend.Data.Repository
                 throw new ArgumentException("MembershipPlan not found");
             }
 
-            context.MembershipPlans.Remove(membershipPlan);
+            membershipPlan.ForDeletion = true;
             await context.SaveChangesAsync();
         }
     }

@@ -162,10 +162,8 @@ namespace Backend.Migrations
                     b.Property<Guid>("MembershipPlanID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("MembershipStatus")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<Guid?>("MembershipPlanPlanID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("MembershipTo")
                         .HasColumnType("datetime2");
@@ -177,6 +175,8 @@ namespace Backend.Migrations
 
                     b.HasIndex("MembershipPlanID");
 
+                    b.HasIndex("MembershipPlanPlanID");
+
                     b.ToTable("Memberships");
 
                     b.HasData(
@@ -187,7 +187,6 @@ namespace Backend.Migrations
                             MembershipFee = 30.0,
                             MembershipFrom = new DateTime(2025, 2, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             MembershipPlanID = new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"),
-                            MembershipStatus = "Active",
                             MembershipTo = new DateTime(2025, 3, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PlanDuration = 1
                         },
@@ -198,7 +197,6 @@ namespace Backend.Migrations
                             MembershipFee = 30.0,
                             MembershipFrom = new DateTime(2025, 2, 19, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             MembershipPlanID = new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"),
-                            MembershipStatus = "Active",
                             MembershipTo = new DateTime(2025, 3, 19, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PlanDuration = 1
                         });
@@ -212,6 +210,9 @@ namespace Backend.Migrations
 
                     b.Property<Guid>("AdminID")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("ForDeletion")
+                        .HasColumnType("bit");
 
                     b.Property<string>("PlanDescription")
                         .IsRequired()
@@ -240,6 +241,7 @@ namespace Backend.Migrations
                         {
                             PlanID = new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"),
                             AdminID = new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"),
+                            ForDeletion = false,
                             PlanDescription = "Gym",
                             PlanName = "Standard",
                             PlanPrice = 30.0
@@ -248,6 +250,7 @@ namespace Backend.Migrations
                         {
                             PlanID = new Guid("87272d68-35fd-4bf5-af55-5f0daa5bada8"),
                             AdminID = new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"),
+                            ForDeletion = false,
                             PlanDescription = "Gym + Spa",
                             PlanName = "Silver",
                             PlanPrice = 45.0
@@ -273,6 +276,10 @@ namespace Backend.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Backend.Entities.MembershipPlan", null)
+                        .WithMany("Memberships")
+                        .HasForeignKey("MembershipPlanPlanID");
+
                     b.Navigation("MembershipPlan");
                 });
 
@@ -285,6 +292,11 @@ namespace Backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Admin");
+                });
+
+            modelBuilder.Entity("Backend.Entities.MembershipPlan", b =>
+                {
+                    b.Navigation("Memberships");
                 });
 #pragma warning restore 612, 618
         }

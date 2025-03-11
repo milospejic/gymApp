@@ -38,6 +38,26 @@ namespace Backend.Controllers
             return Ok(members);
         }
 
+        [Authorize(Roles = "Member")]
+        [HttpGet("myInfo")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+       
+        public async Task<ActionResult<IEnumerable<MemberDto>>> GetMyInfo()
+        {
+            var authenticatedUserId = GetAuthenticatedUserId();
+            if (authenticatedUserId == null)
+                return Unauthorized("Invalid token");
+            var member = await memberRepository.GetMemberById(authenticatedUserId);
+            if (member == null)
+            {
+                return NotFound("There is no member with id: " + authenticatedUserId);
+            }
+
+            return Ok(member);
+        }
+
+
 
         [Authorize(Roles = "Admin,Member")]
         [HttpGet("{id}")]

@@ -39,6 +39,25 @@ namespace Backend.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpGet("myInfo")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+
+        public async Task<ActionResult<IEnumerable<MemberDto>>> GetMyInfo()
+        {
+            var authenticatedAdminId = GetAuthenticatedAdminId();
+            if (authenticatedAdminId == null)
+                return Unauthorized("Invalid token");
+            var admin = await adminRepository.GetAdminById(authenticatedAdminId);
+            if (admin == null)
+            {
+                return NotFound("There is no admin with id: " + authenticatedAdminId);
+            }
+
+            return Ok(admin);
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -15,10 +15,6 @@ namespace Backend.Entities
         [Required(ErrorMessage = "End date is required")]
         public DateTime MembershipTo { get; set; }
 
-        [Required(ErrorMessage = "Membership status is required")]
-        [StringLength(50, ErrorMessage = "Status cannot exceed 50 characters")]
-        public string MembershipStatus { get; set; }
-
         [Required(ErrorMessage = "Plan duration is required")]
         [EnumDataType(typeof(Duration), ErrorMessage = "Invalid duration value")]
         public Duration PlanDuration { get; set; }
@@ -31,7 +27,7 @@ namespace Backend.Entities
         public Boolean IsFeePaid { get; set; }
 
         [Required(ErrorMessage = "Membership plan ID is required")]
-        public Guid MembershipPlanID { get; set; }
+        public Guid? MembershipPlanID { get; set; }
 
         [ForeignKey("MembershipPlanID")]
         public virtual MembershipPlan MembershipPlan { get; set; }

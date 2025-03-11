@@ -37,7 +37,8 @@ namespace Backend.Migrations
                     PlanName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     PlanDescription = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     PlanPrice = table.Column<double>(type: "float", nullable: false),
-                    AdminID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    AdminID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ForDeletion = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -57,11 +58,11 @@ namespace Backend.Migrations
                     MembershipID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MembershipFrom = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MembershipTo = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    MembershipStatus = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     PlanDuration = table.Column<int>(type: "int", nullable: false),
                     MembershipFee = table.Column<double>(type: "float", nullable: false),
                     IsFeePaid = table.Column<bool>(type: "bit", nullable: false),
-                    MembershipPlanID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    MembershipPlanID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MembershipPlanPlanID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -72,6 +73,11 @@ namespace Backend.Migrations
                         principalTable: "MembershipPlans",
                         principalColumn: "PlanID",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Memberships_MembershipPlans_MembershipPlanPlanID",
+                        column: x => x.MembershipPlanPlanID,
+                        principalTable: "MembershipPlans",
+                        principalColumn: "PlanID");
                 });
 
             migrationBuilder.CreateTable(
@@ -100,24 +106,24 @@ namespace Backend.Migrations
             migrationBuilder.InsertData(
                 table: "Admins",
                 columns: new[] { "AdminId", "AdminEmail", "AdminHashedPassword", "AdminName", "AdminPhone", "AdminSurname" },
-                values: new object[] { new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"), "petar@example.com", "Petar123!", "Petar", "0649459884", "Petrovic" });
+                values: new object[] { new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"), "petar@example.com", "$2a$10$CumaLEDEtSsYhcXDZPOnnOxu7.xxZco7ViMg.7m6mFeRkAe4sGzCS", "Petar", "0649459884", "Petrovic" });
 
             migrationBuilder.InsertData(
                 table: "MembershipPlans",
-                columns: new[] { "PlanID", "AdminID", "PlanDescription", "PlanName", "PlanPrice" },
+                columns: new[] { "PlanID", "AdminID", "ForDeletion", "PlanDescription", "PlanName", "PlanPrice" },
                 values: new object[,]
                 {
-                    { new Guid("87272d68-35fd-4bf5-af55-5f0daa5bada8"), new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"), "Gym + Spa", "Silver", 45.0 },
-                    { new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"), new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"), "Gym", "Standard", 30.0 }
+                    { new Guid("87272d68-35fd-4bf5-af55-5f0daa5bada8"), new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"), false, "Gym + Spa", "Silver", 45.0 },
+                    { new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"), new Guid("c95a5ea7-0956-49d4-8047-68b49ad54fdc"), false, "Gym", "Standard", 30.0 }
                 });
 
             migrationBuilder.InsertData(
                 table: "Memberships",
-                columns: new[] { "MembershipID", "IsFeePaid", "MembershipFee", "MembershipFrom", "MembershipPlanID", "MembershipStatus", "MembershipTo", "PlanDuration" },
+                columns: new[] { "MembershipID", "IsFeePaid", "MembershipFee", "MembershipFrom", "MembershipPlanID", "MembershipPlanPlanID", "MembershipTo", "PlanDuration" },
                 values: new object[,]
                 {
-                    { new Guid("48923344-0974-45f1-8d72-25030d19437e"), false, 30.0, new DateTime(2025, 2, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"), "Active", new DateTime(2025, 3, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), 1 },
-                    { new Guid("ac6e2085-57ec-4c1e-a34c-42408b9daebe"), false, 30.0, new DateTime(2025, 2, 19, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"), "Active", new DateTime(2025, 3, 19, 0, 0, 0, 0, DateTimeKind.Unspecified), 1 }
+                    { new Guid("48923344-0974-45f1-8d72-25030d19437e"), false, 30.0, new DateTime(2025, 2, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"), null, new DateTime(2025, 3, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), 1 },
+                    { new Guid("ac6e2085-57ec-4c1e-a34c-42408b9daebe"), false, 30.0, new DateTime(2025, 2, 19, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("b1780029-6d8d-45cc-ab53-e3d20433007b"), null, new DateTime(2025, 3, 19, 0, 0, 0, 0, DateTimeKind.Unspecified), 1 }
                 });
 
             migrationBuilder.InsertData(
@@ -125,8 +131,8 @@ namespace Backend.Migrations
                 columns: new[] { "MemberId", "MemberEmail", "MemberHashedPassword", "MemberName", "MemberPhone", "MemberSurname", "MembershipID" },
                 values: new object[,]
                 {
-                    { new Guid("d8b84401-eba8-4a64-9f19-23f3344e0e82"), "jovan@example.com", "Jovan123!", "Jovan", "0648751234", "Jovanovic", new Guid("48923344-0974-45f1-8d72-25030d19437e") },
-                    { new Guid("f88f5b24-d669-49e3-b21b-072a50c08bc3"), "masa@example.com", "Masa123!", "Masa", "0645731988", "Lukic", new Guid("ac6e2085-57ec-4c1e-a34c-42408b9daebe") }
+                    { new Guid("d8b84401-eba8-4a64-9f19-23f3344e0e82"), "jovan@example.com", "$2a$10$rOVEpsrnqQYlzpRizY/.XOGfB7ztiqocgS6F3sxQeumTxRWQHWRja", "Jovan", "0648751234", "Jovanovic", new Guid("48923344-0974-45f1-8d72-25030d19437e") },
+                    { new Guid("f88f5b24-d669-49e3-b21b-072a50c08bc3"), "masa@example.com", "$2a$10$auEZi85mbEUQ.UwxAg3aN.CBE.of6yvuMrFNsYtYJE9WBZFFmteHa", "Masa", "0645731988", "Lukic", new Guid("ac6e2085-57ec-4c1e-a34c-42408b9daebe") }
                 });
 
             migrationBuilder.CreateIndex(
@@ -173,6 +179,11 @@ namespace Backend.Migrations
                 name: "IX_Memberships_MembershipPlanID",
                 table: "Memberships",
                 column: "MembershipPlanID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Memberships_MembershipPlanPlanID",
+                table: "Memberships",
+                column: "MembershipPlanPlanID");
         }
 
         /// <inheritdoc />
