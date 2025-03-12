@@ -39,13 +39,13 @@ namespace Backend.Data.Context
                 .HasOne(m => m.MembershipPlan)
                 .WithMany()
                 .HasForeignKey(m => m.MembershipPlanID)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<MembershipPlan>()
                 .HasOne(mp => mp.Admin)
                 .WithMany()
                 .HasForeignKey(mp => mp.AdminID)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Admin>()
                 .HasIndex(a => a.AdminEmail)

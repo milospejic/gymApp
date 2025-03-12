@@ -30,6 +30,17 @@ namespace Backend
         {
             services.AddControllers();
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAllOrigins",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyHeader()
+                               .AllowAnyMethod();
+                    });
+            });
+
             // Add Swagger/OpenAPI
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
@@ -123,6 +134,8 @@ namespace Backend
             app.UseHttpsRedirection();
 
             app.UseRouting(); // Ensure routing middleware is added
+
+            app.UseCors("AllowAllOrigins");
 
             app.UseAuthentication();
 
