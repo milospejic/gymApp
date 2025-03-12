@@ -3,11 +3,13 @@ using Backend.Data.Context;
 using Backend.Data.IRepository;
 using Backend.Data.Repository;
 using Backend.Entities;
+using Backend.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Hosting;
@@ -39,6 +41,11 @@ namespace Backend
                                .AllowAnyHeader()
                                .AllowAnyMethod();
                     });
+            });
+
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
             });
 
             // Add Swagger/OpenAPI
@@ -120,6 +127,8 @@ namespace Backend
             services.AddScoped<IMembershipRepository, MembershipRepository>();
             services.AddScoped<IMembershipPlanRepository, MembershipPlanRepository>();
             services.AddScoped<IAuthService, AuthService>();
+
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
