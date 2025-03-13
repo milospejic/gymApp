@@ -4,6 +4,7 @@ using Backend.Dto.BasicDtos;
 using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
 using Backend.Dto.UpdateDtos.Backend.Dto.UpdateDtos;
+using Backend.Utils.CustomExceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,20 +34,12 @@ namespace Backend.Controllers
         public async Task<ActionResult<IEnumerable<AdminDto>>> GetAllAdmins()
         {
             logger.LogInformation("Fetching all admins.");
-            try
+            var admins = await adminRepository.GetAllAdmins();
+            if (admins == null || !admins.Any())
             {
-                var admins = await adminRepository.GetAllAdmins();
-                if (admins == null || !admins.Any())
-                {
-                    return NoContent();
-                }
-                return Ok(admins);
+                return NoContent();
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error fetching all admins.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving all admins.");
-            }
+            return Ok(admins);
         }
 
         [Authorize(Roles = "Admin")]
@@ -57,30 +50,18 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AdminDto>> GetMyInfo()
         {
-            try
+            var authenticatedAdminId = GetAuthenticatedAdminId();
+            if (authenticatedAdminId == null)
             {
-                var authenticatedAdminId = GetAuthenticatedAdminId();
-                if (authenticatedAdminId == null)
-                {
-                    logger.LogWarning("Unauthorized access attempt to 'myInfo'.");
-                    return Unauthorized("Invalid token");
-                }
-
-                logger.LogInformation("Fetching info for Admin ID: {AdminId}", authenticatedAdminId);
-                var admin = await adminRepository.GetAdminById(authenticatedAdminId.Value);
-                if (admin == null)
-                {
-                    logger.LogWarning("No admin found with ID: {MemberId}", authenticatedAdminId);
-                    return NotFound($"No admin found with ID: {authenticatedAdminId}");
-                }
-
-                return Ok(admin);
+                throw new UnauthorizedAccessException("Unauthorized access attempt to 'myInfo'.");
             }
-            catch (Exception ex)
+            logger.LogInformation("Fetching info for Admin ID: {AdminId}", authenticatedAdminId);
+            var admin = await adminRepository.GetAdminById(authenticatedAdminId.Value);
+            if (admin == null)
             {
-                logger.LogError(ex, "Error retrieving admin info.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving your information.");
+                throw new NotFoundException($"No admin found with ID: {authenticatedAdminId}");
             }
+             return Ok(admin);
         }
 
         [Authorize(Roles = "Admin")]
@@ -91,23 +72,13 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AdminDto>> GetAdminById(Guid id)
         {
-            try
-            {
-                logger.LogInformation("Fetching admin with ID: {AdminId}", id);
-                var admin = await adminRepository.GetAdminById(id);
-                if (admin == null)
-                {
-                    logger.LogWarning("No admin found with ID: {AdminId}", id);
-                    return NotFound($"No admin found with ID: {id}");
-                }
-
-                return Ok(admin);
+            logger.LogInformation("Fetching admin with ID: {AdminId}", id);
+            var admin = await adminRepository.GetAdminById(id);
+            if (admin == null)
+             {
+                throw new NotFoundException($"No admin found with ID: {id}");
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error retrieving admin with ID: {AdminId}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the admin.");
-            }
+            return Ok(admin);
         }
 
         [Authorize(Roles = "Admin")]
@@ -126,38 +97,12 @@ namespace Backend.Controllers
                     .Select(e => e.ErrorMessage)
                     .ToList();
 
-                logger.LogWarning("Validation failed for AdminCreateDto: {Errors}", string.Join(" | ", errors));
-
-                return BadRequest(new { Message = "Validation failed", Errors = errors });
+                throw new BadRequestException($"Validation failed for AdminCreateDto: {string.Join(" | ", errors)}");
             }
-            try
-            {
-                if (adminDto == null)
-                {
-                    logger.LogWarning("Attempt to create a admin with invalid data.");
-                    return BadRequest("Invalid request data.");
-                }
-
-                logger.LogInformation("Creating a new admin.");
-                var admin= await adminRepository.CreateAdmin(adminDto);
-                logger.LogInformation("Admin created successfully with ID: {AdminId}", admin.AdminId);
-                return CreatedAtAction(nameof(GetAdminById), new { id = admin.AdminId }, admin);
-            }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError(ex, "DbUpdateException occurred while creating admin. Inner Exception: {InnerException}", ex.InnerException?.Message);
-                return BadRequest(ex.InnerException?.Message ?? ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                logger.LogWarning(ex, "ArgumentException when creating admin.");
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error creating a new admin.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while creating the admin.");
-            }
+            logger.LogInformation("Creating a new admin.");
+            var admin= await adminRepository.CreateAdmin(adminDto);
+            logger.LogInformation("Admin created successfully with ID: {AdminId}", admin.AdminId);
+            return CreatedAtAction(nameof(GetAdminById), new { id = admin.AdminId }, admin);
         }
 
         [Authorize(Roles = "Admin")]
@@ -175,38 +120,17 @@ namespace Backend.Controllers
                     .Select(e => e.ErrorMessage)
                     .ToList();
 
-                logger.LogWarning("Validation failed for AdminUpdateDto: {Errors}", string.Join(" | ", errors));
+                throw new BadRequestException($"Validation failed for AdminUpdateDto: {string.Join(" | ", errors)}");
 
-                return BadRequest(new { Message = "Validation failed", Errors = errors });
             }
-            try
+            var authenticatedAdminId = GetAuthenticatedAdminId();
+            if (authenticatedAdminId == null)
             {
-                var authenticatedAdminId = GetAuthenticatedAdminId();
-                if (authenticatedAdminId == null)
-                {
-                    logger.LogWarning("Unauthorized update attempt.");
-                    return Unauthorized("Invalid token");
-                }
-
-                logger.LogInformation("Updating admin with ID: {AdminId}", authenticatedAdminId);
-                await adminRepository.UpdateAdmin(authenticatedAdminId, adminDto);
-                return Ok("Successfully updated admin!");
+                throw new UnauthorizedAccessException("Unauthorized update attempt.");
             }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError(ex, "DbUpdateException occurred while updating admin. Inner Exception: {InnerException}", ex.InnerException?.Message);
-                return BadRequest(ex.InnerException?.Message ?? ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                logger.LogWarning(ex, "Validation error when updating admin.");
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error updating member.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the admin.");
-            }
+            logger.LogInformation("Updating admin with ID: {AdminId}", authenticatedAdminId);
+            await adminRepository.UpdateAdmin(authenticatedAdminId, adminDto);
+            return Ok("Successfully updated admin!");    
         }
 
         [Authorize(Roles = "Admin")]
@@ -217,30 +141,14 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteAdmin()
         {
-            try
+            var authenticatedAdminId = GetAuthenticatedAdminId();
+            if (authenticatedAdminId == null)
             {
-                var authenticatedAdminId = GetAuthenticatedAdminId();
-                if (authenticatedAdminId == null)
-                {
-                    logger.LogWarning("Unauthorized delete attempt.");
-                    return Unauthorized("Invalid token");
-                }
-
-                logger.LogInformation("Deleting admin with ID: {AdminId}", authenticatedAdminId);
-
-                await adminRepository.DeleteAdmin(authenticatedAdminId);
-                return NoContent();
+                throw new UnauthorizedAccessException("Unauthorized delete attempt.");
             }
-            catch (ArgumentException ex)
-            {
-                logger.LogWarning(ex, "ArgumentException when deleting admin.");
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error deleting admin.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the admin.");
-            }
+            logger.LogInformation("Deleting admin with ID: {AdminId}", authenticatedAdminId);
+            await adminRepository.DeleteAdmin(authenticatedAdminId);
+            return NoContent();
         }
 
         [Authorize(Roles = "Admin")]
@@ -258,71 +166,45 @@ namespace Backend.Controllers
                     .Select(e => e.ErrorMessage)
                     .ToList();
 
-                logger.LogWarning("Validation failed for PasswordUpdateDto: {Errors}", string.Join(" | ", errors));
+                throw new BadRequestException($"Validation failed for PasswordUpdateDto: {string.Join(" | ", errors)}");
 
-                return BadRequest(new { Message = "Validation failed", Errors = errors });
             }
-            try
+            var authenticatedAdminId = GetAuthenticatedAdminId();
+            if (authenticatedAdminId == null)
             {
-                var authenticatedAdminId = GetAuthenticatedAdminId();
-                if (authenticatedAdminId == null)
-                {
-                    logger.LogWarning("Unauthorized access attempt to change password.");
-                    return Unauthorized("Invalid token");
-                }
-
-                logger.LogInformation("Changing password for admin with ID: {AdminId}", authenticatedAdminId);
-
-                await adminRepository.ChangeAdminPassword(authenticatedAdminId, passwordUpdateDto);
-                logger.LogInformation("Password successfully updated for admin with ID: {AdminId}", authenticatedAdminId);
-                return Ok("Password updated!");
+                throw new UnauthorizedAccessException("Unauthorized access attempt to change password.");
             }
-            catch (ArgumentException ex)
-            {
-                logger.LogWarning(ex, "ArgumentException occurred while changing password.");
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "An error occurred while changing password for admin.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while changing the password.");
-            }
+            logger.LogInformation("Changing password for admin with ID: {AdminId}", authenticatedAdminId);
+            await adminRepository.ChangeAdminPassword(authenticatedAdminId, passwordUpdateDto);
+            logger.LogInformation("Password successfully updated for admin with ID: {AdminId}", authenticatedAdminId);
+            return Ok("Password updated!");
         }
 
         private Guid? GetAuthenticatedAdminId()
         {
-            try
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
             {
-                var identity = HttpContext.User.Identity as ClaimsIdentity;
-                if (identity == null)
-                {
-                    logger.LogWarning("No ClaimsIdentity found in the HTTP context.");
-                    return null;
-                }
-
-                var adminIdClaim = identity?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(adminIdClaim))
-                {
-                    logger.LogWarning("Admin ID claim not found in the claims.");
-                    return null;
-                }
-
-                logger.LogInformation("Extracted admin ID claim: {AdminIdClaim}", adminIdClaim);
-
-                if (Guid.TryParse(adminIdClaim, out Guid authenticatedAdminId))
-                {
-                    logger.LogInformation("Successfully parsed admin ID: {AuthenticatedAdminId}", authenticatedAdminId);
-                    return authenticatedAdminId;
-                }
-
-                logger.LogWarning("Failed to parse admin ID claim: {AdminIdClaim}", adminIdClaim);
+                logger.LogWarning("No ClaimsIdentity found in the HTTP context.");
                 return null;
             }
-            catch (Exception ex)
+            var adminIdClaim = identity?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(adminIdClaim))
             {
-                logger.LogError(ex, "Error retrieving authenticated admin ID.");
+                logger.LogWarning("Admin ID claim not found in the claims.");
                 return null;
             }
+
+            logger.LogInformation("Extracted admin ID claim: {AdminIdClaim}", adminIdClaim);
+
+            if (Guid.TryParse(adminIdClaim, out Guid authenticatedAdminId))
+            {
+                logger.LogInformation("Successfully parsed admin ID: {AuthenticatedAdminId}", authenticatedAdminId);
+                return authenticatedAdminId;
+            }
+
+            logger.LogWarning("Failed to parse admin ID claim: {AdminIdClaim}", adminIdClaim);
+            return null;
         }
 
     }

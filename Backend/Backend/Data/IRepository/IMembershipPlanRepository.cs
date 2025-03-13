@@ -11,6 +11,6 @@ namespace Backend.Data.IRepository
         Task<MembershipPlanDto> CreateMembershipPlan(MembershipPlanCreateDto membershipPlanCreateDto, Guid? adminId);
         Task UpdateMembershipPlan(Guid membershipPlanId, MembershipPlanUpdateDto membershipPlanUpdateDto, Guid? adminId);
         Task DeleteMembershipPlan(Guid membershipPlanId);
-        Task SetPlanFordDeletion(Guid id);
+        Task SetPlanForDeletion(Guid id);
     }
 }

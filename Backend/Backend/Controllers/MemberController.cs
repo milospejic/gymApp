@@ -3,6 +3,7 @@ using Backend.Data.IRepository;
 using Backend.Dto.BasicDtos;
 using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
+using Backend.Utils.CustomExceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -37,20 +38,20 @@ namespace Backend.Controllers
         public async Task<ActionResult<IEnumerable<MemberDto>>> GetAllMembers()
         {
             logger.LogInformation("Fetching all members.");
-            try
-            {
+            /*try
+            {*/
                 var members = await memberRepository.GetAllMembers();
                 if (members == null || !members.Any())
                 {
                     return NoContent();
                 }
                 return Ok(members);
-            }
+            /*}
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error fetching all members.");
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving all members.");
-            }
+            }*/
         }
 
         [Authorize(Roles = "Member")]
@@ -61,30 +62,28 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<MemberDto>> GetMyInfo()
         {
-            try
-            {
+            /*try
+            {*/
                 var authenticatedUserId = GetAuthenticatedUserId();
                 if (authenticatedUserId == null)
                 {
-                    logger.LogWarning("Unauthorized access attempt to 'myInfo'.");
-                    return Unauthorized("Invalid token");
+                    throw new UnauthorizedAccessException("Unauthorized access attempt to 'myInfo'.");    
                 }
 
                 logger.LogInformation("Fetching info for Member ID: {MemberId}", authenticatedUserId);
                 var member = await memberRepository.GetMemberById(authenticatedUserId);
                 if (member == null)
                 {
-                    logger.LogWarning("No member found with ID: {MemberId}", authenticatedUserId);
-                    return NotFound($"No member found with ID: {authenticatedUserId}");
+                    throw new NotFoundException($"No member found with ID: {authenticatedUserId}");
                 }
 
                 return Ok(member);
-            }
+            /*}
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error retrieving member info.");
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving your information.");
-            }
+            }*/
         }
 
 
@@ -98,13 +97,12 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<MemberDto>> GetMemberById(Guid id)
         {
-            try
-            {
+            /*try
+            {*/
                 var authenticatedUserId = GetAuthenticatedUserId();
                 if (authenticatedUserId == null)
                 {
-                    logger.LogWarning("Unauthorized access attempt to member ID: {MemberId}", id);
-                    return Unauthorized("Invalid token");
+                    throw new UnauthorizedAccessException($"Unauthorized access attempt to member ID: {id}");
                 }
 
                 if (User.IsInRole("Member") && authenticatedUserId != id)
@@ -117,17 +115,16 @@ namespace Backend.Controllers
                 var member = await memberRepository.GetMemberById(id);
                 if (member == null)
                 {
-                    logger.LogWarning("No member found with ID: {MemberId}", id);
-                    return NotFound($"No member found with ID: {id}");
+                    throw new NotFoundException($"No member found with ID: {id}");
                 }
 
                 return Ok(member);
-            }
+            /*}
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error retrieving member with ID: {MemberId}", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the member.");
-            }
+            }*/
         }
 
         [AllowAnonymous]
@@ -145,12 +142,11 @@ namespace Backend.Controllers
                     .Select(e => e.ErrorMessage)
                     .ToList();
 
-                logger.LogWarning("Validation failed for MemberCreateDto: {Errors}", string.Join(" | ", errors));
+                throw new BadRequestException($"Validation failed for MemberCreateDto: {string.Join(" | ", errors)}");
 
-                return BadRequest(new { Message = "Validation failed", Errors = errors });
             }
-            try
-            {
+            /*try
+            {*/
 
                 logger.LogInformation("Creating a new member.");
                 var membership = await membershipRepository.CreateMembership(memberDto.Membership);
@@ -163,7 +159,7 @@ namespace Backend.Controllers
                 var member = await memberRepository.CreateMember(memberDto, membership.MembershipID);
                 logger.LogInformation("Member created successfully with ID: {MemberId}", member.MemberId);
                 return CreatedAtAction(nameof(GetMemberById), new { id = member.MemberId }, member);
-            }
+            /*}
             catch (DbUpdateException ex)
             {
                 logger.LogError(ex, "DbUpdateException occurred while creating member. Inner Exception: {InnerException}", ex.InnerException?.Message);
@@ -178,7 +174,7 @@ namespace Backend.Controllers
             {
                 logger.LogError(ex, "Error creating a new member.");
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while creating the member.");
-            }
+            }*/
         }
 
 
@@ -196,24 +192,20 @@ namespace Backend.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
-
-                logger.LogWarning("Validation failed for MemberuUpdateDto: {Errors}", string.Join(" | ", errors));
-
-                return BadRequest(new { Message = "Validation failed", Errors = errors });
+                throw new BadRequestException($"Validation failed for MemberuUpdateDto: {string.Join(" | ", errors)}");
             }
-            try
-            {
+            /*try
+            {*/
                 var authenticatedUserId = GetAuthenticatedUserId();
                 if (authenticatedUserId == null)
                 {
-                    logger.LogWarning("Unauthorized update attempt.");
-                    return Unauthorized("Invalid token");
+                    throw new UnauthorizedAccessException("Unauthorized update attempt.");
                 }
 
                 logger.LogInformation("Updating member with ID: {MemberId}", authenticatedUserId);
                 await memberRepository.UpdateMember(authenticatedUserId, memberDto);
                 return Ok("Successfully updated member!");
-            }
+            /*}
             catch (DbUpdateException ex)
             {
                 logger.LogError(ex, "DbUpdateException occurred while creating member. Inner Exception: {InnerException}", ex.InnerException?.Message);
@@ -228,7 +220,7 @@ namespace Backend.Controllers
             {
                 logger.LogError(ex, "Error updating member.");
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the member.");
-            }
+            }*/
         }
 
         [Authorize(Roles = "Member")]
@@ -238,20 +230,19 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteMember()
         {
-            try
-            {
+            /*try
+            {*/
                 var authenticatedUserId = GetAuthenticatedUserId();
                 if (authenticatedUserId == null)
                 {
-                    logger.LogWarning("Unauthorized delete attempt.");
-                    return Unauthorized("Invalid token");
+                    throw new UnauthorizedAccessException("Unauthorized delete attempt.");
                 }
 
                 logger.LogInformation("Deleting member with ID: {MemberId}", authenticatedUserId);
                 await memberRepository.DeleteMember(authenticatedUserId);
 
                 return NoContent();
-            }
+           /* }
             catch (ArgumentException ex)
             {
                 logger.LogError(ex, "ArgumentException occurred while deleting member.");
@@ -261,7 +252,7 @@ namespace Backend.Controllers
             {
                 logger.LogError(ex, "Error deleting member.");
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the member.");
-            }
+            }*/
         }
 
         [Authorize(Roles = "Member")]
@@ -278,18 +269,16 @@ namespace Backend.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
+                throw new BadRequestException($"Validation failed for PasswordUpdateDto: {string.Join(" | ", errors)}");
 
-                logger.LogWarning("Validation failed for PasswordUpdateDto: {Errors}", string.Join(" | ", errors));
-
-                return BadRequest(new { Message = "Validation failed", Errors = errors });
             }
-            try
-            {
+            /*try
+            {*/
                 var authenticatedUserId = GetAuthenticatedUserId();
                 if (authenticatedUserId == null)
                 {
-                    logger.LogWarning("Unauthorized access attempt to change password.");
-                    return Unauthorized("Invalid token");
+                    throw new UnauthorizedAccessException("Unauthorized access attempt to change password.");
+
                 }
 
                 logger.LogInformation("Changing password for member with ID: {MemberId}", authenticatedUserId);
@@ -298,7 +287,7 @@ namespace Backend.Controllers
 
                 logger.LogInformation("Password successfully updated for member with ID: {MemberId}", authenticatedUserId);
                 return Ok("Password updated!");
-            }
+           /* }
             catch (ArgumentException ex)
             {
                 logger.LogError(ex, "ArgumentException occurred while changing password.");
@@ -308,15 +297,15 @@ namespace Backend.Controllers
             {
                 logger.LogError(ex, "An error occurred while changing password for member.");
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while changing the password.");
-            }
+            }*/
         }
 
 
 
         private Guid? GetAuthenticatedUserId()
         {
-            try
-            {
+            /*try
+            {*/
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
                 if (identity == null)
                 {
@@ -341,12 +330,12 @@ namespace Backend.Controllers
 
                 logger.LogWarning("Failed to parse user ID claim: {UserIdClaim}", userIdClaim);
                 return null;
-            }
+            /*}
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error retrieving authenticated user ID.");
                 return null;
-            }
+            }*/
         }
 
 

@@ -4,6 +4,9 @@ using Backend.Data.IRepository;
 using Backend.Data.Repository;
 using Backend.Entities;
 using Backend.Utils;
+using Backend.Utils.CustomExceptions;
+using Backend.Utils.ExceptionHandlers;
+using Backend.Utils.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -128,7 +131,10 @@ namespace Backend
             services.AddScoped<IMembershipPlanRepository, MembershipPlanRepository>();
             services.AddScoped<IAuthService, AuthService>();
 
-
+            services.AddExceptionHandler<NotFoundExceptionHandler>();
+            services.AddExceptionHandler<BadRequestExceptionHandler>();
+            services.AddExceptionHandler<GlobalExceptionHandler>();
+            services.AddProblemDetails();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -147,6 +153,7 @@ namespace Backend
             app.UseCors("AllowAllOrigins");
 
             app.UseAuthentication();
+            app.UseExceptionHandler();
 
             app.UseAuthorization();
 

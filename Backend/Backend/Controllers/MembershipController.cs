@@ -3,6 +3,7 @@ using Backend.Data.IRepository;
 using Backend.Dto.BasicDtos;
 using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
+using Backend.Utils.CustomExceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -34,21 +35,12 @@ namespace Backend.Controllers
         public async Task<ActionResult<IEnumerable<MembershipDto>>> GetAllMemberships()
         {
             logger.LogInformation("Fetching all memberships.");
-            try
+            var memberships = await membershipRepository.GetAllMemberships();
+            if (memberships == null || !memberships.Any())
             {
-
-                var memberships = await membershipRepository.GetAllMemberships();
-                if (memberships == null || !memberships.Any())
-                {
-                    return NoContent();
-                }
-                return Ok(memberships);
+                return NoContent();
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error fetching all memberships.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving all memberships.");
-            }
+            return Ok(memberships);
         }
 
         [Authorize(Roles = "Admin,Member")]
@@ -60,30 +52,20 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<MembershipDto>> GetMembershipById(Guid id)
         {
-            try
+            var authenticatedUserId = GetAuthenticatedUserId();
+            if (authenticatedUserId == null)
             {
-                var authenticatedUserId = GetAuthenticatedUserId();
-                if (authenticatedUserId == null)
-                {
-                    logger.LogWarning("Unauthorized access attempt to membership ID: {MembershipId}", id);
-                    return Unauthorized("Invalid token");
-                }
-                logger.LogInformation("Fetching membership with ID: {MembershipId}", id);
-                var membership = await membershipRepository.GetMembershipById(id);
+                throw new UnauthorizedAccessException($"Unauthorized access attempt to membership ID: {id}");
+            }
+            logger.LogInformation("Fetching membership with ID: {MembershipId}", id);
+            var membership = await membershipRepository.GetMembershipById(id);
                 
-                if (membership == null)
-                {
-                    logger.LogWarning("No membership found with ID: {MembershipId}", id);
-                    return NotFound($"No membership found with ID: {id}");
-                }
-
-                return Ok(membership);
-            }
-            catch (Exception ex)
+            if (membership == null)
             {
-                logger.LogError(ex, "Error retrieving membership with ID: {MembershipId}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the membership.");
+                throw new NotFoundException($"No membership found with ID: {id}");
             }
+
+            return Ok(membership);
         }
 
 
@@ -102,77 +84,47 @@ namespace Backend.Controllers
                     .Select(e => e.ErrorMessage)
                     .ToList();
 
-                logger.LogWarning("Validation failed for MembershipUpdateDto: {Errors}", string.Join(" | ", errors));
+                throw new BadRequestException($"Validation failed for MembershipUpdateDto: {string.Join(" | ", errors)}");
 
-                return BadRequest(new { Message = "Validation failed", Errors = errors });
             }
-            try
+            var authenticatedMemberId = GetAuthenticatedUserId();
+            if (authenticatedMemberId == null)
             {
-                var authenticatedMemberId = GetAuthenticatedUserId();
-                if (authenticatedMemberId == null)
-                    if (authenticatedMemberId == null)
-                    {
-                        logger.LogWarning("Unauthorized update attempt.");
-                        return Unauthorized("Invalid token");
-                    }
-
-                var member = await memberRepository.GetMemberById(authenticatedMemberId);
-
-                logger.LogInformation("Updating membership  with ID: {MembershipId}", member.MembershipId);
-
-                await membershipRepository.UpdateMembership(member.MembershipId, membershipDto);
-                return Ok("Successfully updated membership!");
+                throw new UnauthorizedAccessException("Unauthorized update attempt.");
             }
-            catch (ArgumentException ex)
-            {
-                logger.LogWarning(ex, "ArgumentException when updating membership.");
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error updating membership.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the membership.");
-            }
+            var member = await memberRepository.GetMemberById(authenticatedMemberId);
+            logger.LogInformation("Updating membership  with ID: {MembershipId}", member.MembershipId);
+            await membershipRepository.UpdateMembership(member.MembershipId, membershipDto);
+            return Ok("Successfully updated membership!");
         }
 
 
         private Guid? GetAuthenticatedUserId()
         {
-            try
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
             {
-                var identity = HttpContext.User.Identity as ClaimsIdentity;
-                if (identity == null)
-                {
-                    logger.LogWarning("No ClaimsIdentity found in the HTTP context.");
-                    return null;
-                }
-
-                var userIdClaim = identity?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userIdClaim))
-                {
-                    logger.LogWarning("User ID claim not found in the claims.");
-                    return null;
-                }
-
-                logger.LogInformation("Extracted user ID claim: {UserIdClaim}", userIdClaim);
-
-                if (Guid.TryParse(userIdClaim, out Guid authenticatedUserId))
-                {
-                    logger.LogInformation("Successfully parsed user ID: {AuthenticatedUserId}", authenticatedUserId);
-                    return authenticatedUserId;
-                }
-
-                logger.LogWarning("Failed to parse user ID claim: {UserIdClaim}", userIdClaim);
+                logger.LogWarning("No ClaimsIdentity found in the HTTP context.");
                 return null;
             }
-            catch (Exception ex)
+
+            var userIdClaim = identity?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
             {
-                logger.LogError(ex, "Error retrieving authenticated user ID.");
+                logger.LogWarning("User ID claim not found in the claims.");
                 return null;
             }
+
+            logger.LogInformation("Extracted user ID claim: {UserIdClaim}", userIdClaim);
+
+            if (Guid.TryParse(userIdClaim, out Guid authenticatedUserId))
+            {
+                logger.LogInformation("Successfully parsed user ID: {AuthenticatedUserId}", authenticatedUserId);
+                return authenticatedUserId;
+            }
+
+            logger.LogWarning("Failed to parse user ID claim: {UserIdClaim}", userIdClaim);
+            return null;
         }
-
-
-
     }
 }

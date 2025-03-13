@@ -75,19 +75,17 @@ namespace Backend.Data.Repository
                 throw new InvalidOperationException("Plan is not set for deletion");
             }
 
-            // Check if there are active memberships first
             if (membershipPlan.Memberships.Any(m => m.MembershipTo >= DateTime.Now))
             {
                 throw new InvalidOperationException("There are still active memberships on this plan");
             }
 
-            // Remove plan if no memberships exist or all are expired
             context.MembershipPlans.Remove(membershipPlan);
             await context.SaveChangesAsync();
         }
 
 
-        public async Task SetPlanFordDeletion(Guid id)
+        public async Task SetPlanForDeletion(Guid id)
         {
             var membershipPlan = await context.MembershipPlans.FindAsync(id);
             if (membershipPlan == null)
@@ -95,7 +93,7 @@ namespace Backend.Data.Repository
                 throw new ArgumentException("MembershipPlan not found");
             }
 
-            membershipPlan.ForDeletion = true;
+            membershipPlan.ForDeletion = !membershipPlan.ForDeletion;
             await context.SaveChangesAsync();
         }
     }
