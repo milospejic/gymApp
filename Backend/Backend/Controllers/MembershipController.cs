@@ -57,6 +57,12 @@ namespace Backend.Controllers
             {
                 throw new UnauthorizedAccessException($"Unauthorized access attempt to membership ID: {id}");
             }
+            var member = await memberRepository.GetMemberByMembershipId(id);
+            if (User.IsInRole("Member") && authenticatedUserId != member.MemberId)
+            {
+                logger.LogWarning("Forbidden access: Member {MemberId} attempted to access data of membership: {RequestedId}", authenticatedUserId, id);
+                return Forbid("You can only access your own membership.");
+            }
             logger.LogInformation("Fetching membership with ID: {MembershipId}", id);
             var membership = await membershipRepository.GetMembershipById(id);
                 

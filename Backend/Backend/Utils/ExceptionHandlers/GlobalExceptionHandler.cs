@@ -10,16 +10,16 @@ namespace Backend.Utils.Exceptions
 {
     internal sealed class GlobalExceptionHandler : IExceptionHandler
     {
-        private readonly ILogger<GlobalExceptionHandler> _logger;
+        private readonly ILogger<GlobalExceptionHandler> logger;
 
         public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
         {
-            _logger = logger;
+            this.logger = logger;
         }
 
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            _logger.LogError(exception, exception.Message);
+            logger.LogError(exception, exception.Message);
 
             var statusCode = exception switch
             {
@@ -50,7 +50,7 @@ namespace Backend.Utils.Exceptions
             {
                 Status = statusCode,
                 Title = title,
-                Detail = exception.Message
+                Detail = message
             };
 
             httpContext.Response.StatusCode = problemDetails.Status.Value;

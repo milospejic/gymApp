@@ -130,6 +130,7 @@ namespace Backend.Controllers
         {
             logger.LogInformation("Deleting membership plan with ID: {MembershipPlanId}", id);
             await membershipPlanRepository.DeleteMembershipPlan(id);
+            logger.LogInformation("Membership plan with ID: {MembershipPlanId} deleted successfully", id);
             return NoContent();
         }
 

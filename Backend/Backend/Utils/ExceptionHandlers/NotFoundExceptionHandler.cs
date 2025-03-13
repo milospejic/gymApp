@@ -6,23 +6,20 @@ namespace Backend.Utils.ExceptionHandlers
 {
     internal sealed class NotFoundExceptionHandler : IExceptionHandler
     {
-        private readonly ILogger<NotFoundExceptionHandler> _logger;
+        private readonly ILogger<NotFoundExceptionHandler> logger;
 
         public NotFoundExceptionHandler(ILogger<NotFoundExceptionHandler> logger)
         {
-            _logger = logger;
+            this.logger = logger;
         }
 
-        public async ValueTask<bool> TryHandleAsync(
-            HttpContext httpContext,
-            Exception exception,
-            CancellationToken cancellationToken)
+        public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
             if (exception is not NotFoundException notFoundException)
             {
                 return false;
             }
-            _logger.LogError(notFoundException, notFoundException.Message);
+            logger.LogError(notFoundException, notFoundException.Message);
             
 
             var problemDetails = new ProblemDetails
@@ -34,8 +31,7 @@ namespace Backend.Utils.ExceptionHandlers
 
             httpContext.Response.StatusCode = problemDetails.Status.Value;
 
-            await httpContext.Response
-                .WriteAsJsonAsync(problemDetails, cancellationToken);
+            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
             return true;
         }

@@ -131,6 +131,7 @@ namespace Backend
             services.AddScoped<IMembershipPlanRepository, MembershipPlanRepository>();
             services.AddScoped<IAuthService, AuthService>();
 
+            services.AddExceptionHandler<EmailAlreadyInUseExceptionHandler>();
             services.AddExceptionHandler<NotFoundExceptionHandler>();
             services.AddExceptionHandler<BadRequestExceptionHandler>();
             services.AddExceptionHandler<GlobalExceptionHandler>();

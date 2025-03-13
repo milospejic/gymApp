@@ -36,7 +36,15 @@ namespace Backend.Data.Repository
             var admin = await context.Admins.FindAsync(id);
             return mapper.Map<AdminDto>(admin);
         }
-
+        public async Task<AdminDto> GetAdminByEmail(string email)
+        {
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email), "Email cannot be null");
+            }
+            var admin = await context.Admins.FirstOrDefaultAsync(a => a.AdminEmail == email);
+            return mapper.Map<AdminDto>(admin);
+        }
         public async Task<AdminDto> CreateAdmin(AdminCreateDto adminDto)
         {
             var admin = mapper.Map<Admin>(adminDto);

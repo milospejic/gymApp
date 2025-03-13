@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Backend.Data.IRepository;
+using Backend.Data.Repository;
 using Backend.Dto.BasicDtos;
 using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
@@ -17,11 +18,13 @@ namespace Backend.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdminRepository adminRepository;
+        private readonly IMemberRepository memberRepository;
         private readonly ILogger<AdminController> logger;
 
-        public AdminController(IAdminRepository adminRepository, ILogger<AdminController> logger)
+        public AdminController(IAdminRepository adminRepository, IMemberRepository memberRepository, ILogger<AdminController> logger)
         {
             this.adminRepository = adminRepository;
+            this.memberRepository = memberRepository;
             this.logger = logger;
         }
 
@@ -82,6 +85,25 @@ namespace Backend.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpGet("email")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<MemberDto>> GetAdminByEmail(string email)
+        {
+            logger.LogInformation("Fetching member with email: {Email}", email);
+            var admin = await adminRepository.GetAdminByEmail(email);
+            if (admin == null)
+            {
+                throw new NotFoundException($"No admin found with email: {email}");
+            }
+
+            return Ok(admin);
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -98,6 +120,10 @@ namespace Backend.Controllers
                     .ToList();
 
                 throw new BadRequestException($"Validation failed for AdminCreateDto: {string.Join(" | ", errors)}");
+            }
+            if (await memberRepository.GetMemberByEmail(adminDto.AdminEmail) != null || await adminRepository.GetAdminByEmail(adminDto.AdminEmail) != null)
+            {
+                throw new EmailAlreadyInUseException($"Email ({adminDto.AdminEmail}) is already taken");
             }
             logger.LogInformation("Creating a new admin.");
             var admin= await adminRepository.CreateAdmin(adminDto);
@@ -148,6 +174,7 @@ namespace Backend.Controllers
             }
             logger.LogInformation("Deleting admin with ID: {AdminId}", authenticatedAdminId);
             await adminRepository.DeleteAdmin(authenticatedAdminId);
+            logger.LogInformation("Admin with ID: {AdminId} deleted successfully", authenticatedAdminId);
             return NoContent();
         }
 

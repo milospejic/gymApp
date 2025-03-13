@@ -43,7 +43,33 @@ namespace Backend.Data.Repository
                     .FirstOrDefaultAsync(m => m.MemberId == id);
             return mapper.Map<MemberDto>(member);
         }
+        public async Task<MemberDto> GetMemberByMembershipId(Guid? id)
+        {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id), "ID cannot be null");
+            }
+            var member = await context.Members
+                .Include(m => m.Membership)
+                .ThenInclude(ms => ms.MembershipPlan)
+                .ThenInclude(ma => ma.Admin)
+                    .FirstOrDefaultAsync(m => m.MembershipID == id);
+            return mapper.Map<MemberDto>(member);
+        }
 
+        public async Task<MemberDto> GetMemberByEmail(string email)
+        {
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email), "Email cannot be null");
+            }
+            var member = await context.Members
+                .Include(m => m.Membership)
+                .ThenInclude(ms => ms.MembershipPlan)
+                .ThenInclude(ma => ma.Admin)
+                    .FirstOrDefaultAsync(m => m.MemberEmail == email);
+            return mapper.Map<MemberDto>(member);
+        }
         public async Task<MemberDto> CreateMember(MemberCreateDto memberDto, Guid membershipId)
         {
             var member = mapper.Map<Member>(memberDto);

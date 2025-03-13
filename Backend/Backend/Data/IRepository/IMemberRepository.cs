@@ -8,6 +8,8 @@ namespace Backend.Data.IRepository
     {
         Task<IEnumerable<MemberDto>> GetAllMembers();
         Task<MemberDto> GetMemberById(Guid? memberId);
+        Task<MemberDto> GetMemberByMembershipId(Guid? id);
+        Task<MemberDto> GetMemberByEmail(string email);
         Task<MemberDto> CreateMember(MemberCreateDto memberCreateDto, Guid membershipId);
         Task UpdateMember(Guid? memberId, MemberUpdateDto memberUpdateDto);
         Task DeleteMember(Guid? memberId);
