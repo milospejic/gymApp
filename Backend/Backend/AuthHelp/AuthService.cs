@@ -12,18 +12,30 @@ using System.Text;
 
 namespace Backend.AuthHelp
 {
+    /// <summary>
+    /// Implements the <see cref="IAuthService"/> interface for managing auth-related operations.
+    /// </summary>
     public class AuthService : IAuthService
     {
         private readonly IConfiguration configuration;
         private readonly MyDbContext context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthService"/> class.
+        /// </summary>
+        /// <param name="configuration">Application configuration settings.</param>
+        /// <param name="context">Database context for accessing user data.</param>
         public AuthService(IConfiguration configuration, MyDbContext context)
         {
             this.configuration = configuration;
             this.context = context;
-         
         }
 
+        /// <summary>
+        /// Validates a member's login credentials.
+        /// </summary>
+        /// <param name="loginDto">The login DTO containing email and password.</param>
+        /// <returns>The authenticated <see cref="Member"/> entity if credentials are valid; otherwise, null.</returns>
         public async Task<Member> IsMember(LoginDto loginDto)
         {
             var member = await context.Members.SingleOrDefaultAsync(m => m.MemberEmail == loginDto.Email);
@@ -32,6 +44,11 @@ namespace Backend.AuthHelp
             return null;
         }
 
+        /// <summary>
+        /// Validates an admin's login credentials.
+        /// </summary>
+        /// <param name="loginDto">The login DTO containing email and password.</param>
+        /// <returns>The authenticated <see cref="Admin"/> entity if credentials are valid; otherwise, null.</returns>
         public async Task<Admin> IsAdmin(LoginDto loginDto)
         {
             var admin = await context.Admins.SingleOrDefaultAsync(a => a.AdminEmail == loginDto.Email);
@@ -39,7 +56,14 @@ namespace Backend.AuthHelp
                 return admin;
             return null;
         }
-        
+
+        /// <summary>
+        /// Generates a JWT token for an authenticated user.
+        /// </summary>
+        /// <param name="email">The email of the authenticated user.</param>
+        /// <param name="role">The role of the authenticated user.</param>
+        /// <param name="id">The unique identifier of the authenticated user.</param>
+        /// <returns>A JWT token as a string.</returns>
         public string GenerateToken(string email, string role, Guid id)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));

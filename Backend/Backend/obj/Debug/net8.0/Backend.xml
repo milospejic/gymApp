@@ -1,0 +1,1829 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Backend</name>
+    </assembly>
+    <members>
+        <member name="T:Backend.AuthHelp.AuthService">
+            <summary>
+            Implements the <see cref="T:Backend.AuthHelp.IAuthService"/> interface for managing auth-related operations.
+            </summary>
+        </member>
+        <member name="M:Backend.AuthHelp.AuthService.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Backend.Data.Context.MyDbContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.AuthHelp.AuthService"/> class.
+            </summary>
+            <param name="configuration">Application configuration settings.</param>
+            <param name="context">Database context for accessing user data.</param>
+        </member>
+        <member name="M:Backend.AuthHelp.AuthService.IsMember(Backend.Dto.BasicDtos.LoginDto)">
+            <summary>
+            Validates a member's login credentials.
+            </summary>
+            <param name="loginDto">The login DTO containing email and password.</param>
+            <returns>The authenticated <see cref="T:Backend.Entities.Member"/> entity if credentials are valid; otherwise, null.</returns>
+        </member>
+        <member name="M:Backend.AuthHelp.AuthService.IsAdmin(Backend.Dto.BasicDtos.LoginDto)">
+            <summary>
+            Validates an admin's login credentials.
+            </summary>
+            <param name="loginDto">The login DTO containing email and password.</param>
+            <returns>The authenticated <see cref="T:Backend.Entities.Admin"/> entity if credentials are valid; otherwise, null.</returns>
+        </member>
+        <member name="M:Backend.AuthHelp.AuthService.GenerateToken(System.String,System.String,System.Guid)">
+            <summary>
+            Generates a JWT token for an authenticated user.
+            </summary>
+            <param name="email">The email of the authenticated user.</param>
+            <param name="role">The role of the authenticated user.</param>
+            <param name="id">The unique identifier of the authenticated user.</param>
+            <returns>A JWT token as a string.</returns>
+        </member>
+        <member name="T:Backend.AuthHelp.IAuthService">
+            <summary>
+            Defines authentication-related operations, including token generation and user validation.
+            </summary>
+        </member>
+        <member name="M:Backend.AuthHelp.IAuthService.GenerateToken(System.String,System.String,System.Guid)">
+            <summary>
+            Generates a JWT token for the authenticated user.
+            </summary>
+            <param name="email">The email of the user.</param>
+            <param name="role">The role of the user (e.g., Admin, Member).</param>
+            <param name="id">The unique identifier of the user.</param>
+            <returns>A JWT token as a string.</returns>
+        </member>
+        <member name="M:Backend.AuthHelp.IAuthService.IsMember(Backend.Dto.BasicDtos.LoginDto)">
+            <summary>
+            Validates a member's login credentials.
+            </summary>
+            <param name="loginDto">The login data transfer object containing email and password.</param>
+            <returns>The authenticated Member entity if credentials are valid; otherwise, null.</returns>
+        </member>
+        <member name="M:Backend.AuthHelp.IAuthService.IsAdmin(Backend.Dto.BasicDtos.LoginDto)">
+            <summary>
+            Validates an admin's login credentials.
+            </summary>
+            <param name="loginDto">The login data transfer object containing email and password.</param>
+            <returns>The authenticated Admin entity if credentials are valid; otherwise, null.</returns>
+        </member>
+        <member name="T:Backend.Controllers.AdminController">
+            <summary>
+            Controller responsible for managing administrator-related operations,
+            such as retrieving, creating, updating, and deleting admin accounts.
+            Requires Admin role authorization for all actions.
+            </summary>
+        </member>
+        <member name="M:Backend.Controllers.AdminController.#ctor(Backend.Data.IRepository.IAdminRepository,Backend.Data.IRepository.IMemberRepository,Microsoft.Extensions.Logging.ILogger{Backend.Controllers.AdminController})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Controllers.AdminController"/> class.
+            </summary>
+            <param name="adminRepository">Service for handling admin-related database operations.</param>
+            <param name="memberRepository">Service for handling member-related database operations.</param>
+            <param name="logger">Logger for capturing controller activity.</param>
+        </member>
+        <member name="M:Backend.Controllers.AdminController.GetAllAdmins">
+            <summary>
+            Retrieves a list of all administrators in the system.
+            </summary>
+            <returns>A list of administrators or NoContent if none exist.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.AdminController.GetMyInfo">
+            <summary>
+            Retrieves the information of the currently authenticated administrator.
+            </summary>
+            <returns>The details of the authenticated administrator.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated.
+            - 404 Not Found: If no admin is found with the provided authenticated ID.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.AdminController.GetAdminById(System.Guid)">
+            <summary>
+            Retrieves the administrator's details by their ID.
+            </summary>
+            <param name="id">The unique identifier of the administrator.</param>
+            <returns>The details of the administrator with the provided ID.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 404 Not Found: If no admin is found with the provided ID.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.AdminController.GetAdminByEmail(System.String)">
+            <summary>
+            Retrieves an administrator's details by their email address.
+            </summary>
+            <param name="email">The email address of the administrator.</param>
+            <returns>The details of the administrator with the provided email.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 404 Not Found: If no admin is found with the provided email.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.AdminController.CreateAdmin(Backend.Dto.CreateDtos.AdminCreateDto)">
+            <summary>
+            Creates a new administrator account.
+            </summary>
+            <param name="adminDto">The admin creation request containing necessary details.</param>
+            <returns>The unique identifier of the created administrator.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If the provided data is invalid (e.g., missing or incorrect fields).
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 409 Conflict: If the provided email address is already in use.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.AdminController.UpdateAdmin(Backend.Dto.UpdateDtos.AdminUpdateDto)">
+            <summary>
+            Updates the authenticated administrator's profile information.
+            </summary>
+            <param name="adminDto">The admin update request containing necessary details.</param>
+            <returns>A success response if the update is completed.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If the request data is invalid.
+            - 401 Unauthorized: If the administrator is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.AdminController.DeleteAdmin">
+            <summary>
+            Deletes the currently authenticated administrator account.
+            </summary>
+            <returns>A success response if the account deletion is completed.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If there is an issue with the request.
+            - 401 Unauthorized: If the administrator is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.AdminController.ChangeAdminPassword(Backend.Dto.UpdateDtos.PasswordUpdateDto)">
+            <summary>
+            Changes the password for the authenticated administrator.
+            </summary>
+            <param name="passwordUpdateDto">The password update request containing the old and new password.</param>
+            <returns>A success response if the password change is completed.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If the provided data is invalid.
+            - 401 Unauthorized: If the administrator is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.AdminController.GetAuthenticatedAdminId">
+            <summary>
+            Retrieves the authenticated admin's ID from claims.
+            </summary>
+            <returns>Admin ID if authenticated, otherwise null.</returns>
+        </member>
+        <member name="T:Backend.Controllers.AuthController">
+            <summary>
+            Controller responsible for managing authentication-related operations, 
+            such as logging in a user (both admin and member).
+            </summary>
+        </member>
+        <member name="M:Backend.Controllers.AuthController.#ctor(Backend.AuthHelp.IAuthService,Microsoft.Extensions.Logging.ILogger{Backend.Controllers.AuthController})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Controllers.AuthController"/> class.
+            </summary>
+            <param name="authService">ervice for handling authentication logic.</param>
+            <param name="logger">Logger for capturing controller activity.</param>
+        </member>
+        <member name="M:Backend.Controllers.AuthController.Login(Backend.Dto.BasicDtos.LoginDto)">
+            <summary>
+            Authenticates the user based on the provided login credentials and generates a JWT token for valid users.
+            </summary>
+            <param name="loginDto">DTO containing the user's email and password.</param>
+            <returns>Returns a JWT token if authentication is successful.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If the provided data is invalid (e.g., missing or incorrect fields).
+            - 401 Unauthorized: If the credentials are incorrecte.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="T:Backend.Controllers.MemberController">
+            <summary>
+            Controller responsible for managing member-related operations,
+            such as retrieving, creating, updating, and deleting member accounts.
+            </summary>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.#ctor(Backend.Data.IRepository.IMemberRepository,Backend.Data.IRepository.IMembershipRepository,Backend.Data.IRepository.IAdminRepository,Microsoft.Extensions.Logging.ILogger{Backend.Controllers.MemberController})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Controllers.MemberController"/> class.
+            </summary>
+            <param name="memberRepository">Service for handling member-related database operations.</param>
+            <param name="membershipRepository">Service for handling membership-related database operations.</param>
+            <param name="adminRepository">Service for handling admin-related database operations.</param>
+            <param name="logger">Logger for capturing controller activity.</param>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.GetAllMembers">
+            <summary>
+            Retrieves a list of all members in the system.
+            Only accessible by authenticated admins.
+            </summary>
+            <returns>A list of members or NoContent if none exist.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.GetMyInfo">
+            <summary>
+            Retrieves the information of the currently authenticated member.
+            Only accessible by authenticated members.
+            </summary>
+            <returns>The details of the authenticated member.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated.
+            - 404 Not Found: If no member is found with the provided authenticated ID.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.GetMemberById(System.Guid)">
+            <summary>
+            Retrieves the member's details by their ID.
+            Only accessible by authenticated admins and members.
+            </summary>
+            <param name="id">The unique identifier of the member.</param>
+            <returns>The details of the member with the provided ID.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 403 Forgidden: If a member attempts to access anothers data.
+            - 404 Not Found: If no member is found with the provided ID.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.GetMemberByMembershipId(System.Guid)">
+            <summary>
+            Retrieves the member's details by their MembershipID.
+            Only accessible by authenticated admins.
+            </summary>
+            <param name="membershipId">The unique identifier of the member's membership.</param>
+            <returns>The details of the member with the provided MembershipId.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 404 Not Found: If no member is found with the provided membershipID.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.GetMemberByEmail(System.String)">
+            <summary>
+            Only accessible by authenticated admins.
+            Retrieves a member's details by their email address.
+            </summary>
+            <param name="email">The email address of the member.</param>
+            <returns>The details of the member with the provided email.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 404 Not Found: If no admin is found with the provided email.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.CreateMember(Backend.Dto.CreateDtos.MemberCreateDto)">
+            <summary>
+            Creates a new member account.
+            Accesssible by all.
+            </summary>
+            <param name="memberDto">The member creation request containing necessary details.</param>
+            <returns>The unique identifier of the created member.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If the provided data is invalid (e.g., missing or incorrect fields).
+            - 409 Conflict: If the provided email address is already in use.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.UpdateMember(Backend.Dto.UpdateDtos.MemberUpdateDto)">
+            <summary>
+            Updates the authenticated member's profile information.
+            Only accessible by authenticated members.
+            </summary>
+            <param name="memberDto">The member update request containing necessary details.</param>
+            <returns>A success response if the update is completed.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If the request data is invalid.
+            - 401 Unauthorized: If the member is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.DeleteMember">
+            <summary>
+            Deletes the currently authenticated member account.
+            Only accessible by authenticated members.
+            </summary>
+            <returns>A success response if the account deletion is completed.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If there is an issue with the request.
+            - 401 Unauthorized: If the member is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.ChangeMemberPassword(Backend.Dto.UpdateDtos.PasswordUpdateDto)">
+            <summary>
+            Changes the password for the authenticated member.
+            Only accessible by authenticated members.
+            </summary>
+            <param name="passwordUpdateDto">The password update request containing the old and new password.</param>
+            <returns>A success response if the password change is completed.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If the provided data is invalid.
+            - 401 Unauthorized: If the member is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MemberController.GetAuthenticatedUserId">
+            <summary>
+            Retrieves the authenticated member's ID from claims.
+            </summary>
+            <returns> MemberID if authenticated, otherwise null.</returns>
+        </member>
+        <member name="T:Backend.Controllers.MembershipController">
+            <summary>
+            Controller responsible for managing membership-related operations,
+            such as retrieving and updating memberships.
+            </summary>
+        </member>
+        <member name="M:Backend.Controllers.MembershipController.#ctor(Backend.Data.IRepository.IMembershipRepository,Backend.Data.IRepository.IMemberRepository,Microsoft.Extensions.Logging.ILogger{Backend.Controllers.MembershipController})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Controllers.MembershipController"/> class.
+            </summary>
+            <param name="membershipRepository">Service for handling membership-related database operations.</param>
+            <param name="memberRepository">Service for handling member-related database operations.</param>
+            <param name="logger">Logger for capturing controller activity.</param>
+        </member>
+        <member name="M:Backend.Controllers.MembershipController.GetAllMemberships">
+            <summary>
+            Retrieves a list of all memberships in the system.
+            Only accessible by authenticated admins.
+            </summary>
+            <returns>A list of memberships or NoContent if none exist.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MembershipController.GetMembershipById(System.Guid)">
+            <summary>
+            Retrieves the membership's details by their ID.
+            Only accessible by authenticated admins and members.
+            </summary>
+            <param name="id">The unique identifier of the membership.</param>
+            <returns>The details of the membership with the provided ID.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 403 Forbidden: If a member attempts to access anothers membership data.
+            - 404 Not Found: If no membership is found with the provided ID.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MembershipController.UpdateMembership(Backend.Dto.UpdateDtos.MembershipUpdateDto)">
+            <summary>
+            Updates the authenticated members's membership information.
+            Only accessible by authenticated members.
+            </summary>
+            <param name="membershipDto">The membership update request containing necessary details.</param>
+            <returns>A success response if the update is completed.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If the request data is invalid.
+            - 401 Unauthorized: If the member is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MembershipController.GetAuthenticatedUserId">
+            <summary>
+            Retrieves the authenticated member's ID from claims.
+            </summary>
+            <returns> MemberID if authenticated, otherwise null.</returns>
+        </member>
+        <member name="T:Backend.Controllers.MembershipPlanController">
+            <summary>
+            Controller responsible for managing membershipPlan-related operations,
+            such as retrieving, creating, updating, and deleting membership plans.
+            </summary>
+        </member>
+        <member name="M:Backend.Controllers.MembershipPlanController.#ctor(Backend.Data.IRepository.IMembershipPlanRepository,Microsoft.Extensions.Logging.ILogger{Backend.Controllers.MembershipPlanController})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Controllers.MembershipPlanController"/> class.
+            </summary>
+            <param name="membershipPlanRepository">Service for handling membershipPlan-related database operations.</param>
+            <param name="logger">Logger for capturing controller activity.</param>
+        </member>
+        <member name="M:Backend.Controllers.MembershipPlanController.GetAllMembershipPlans">
+            <summary>
+            Retrieves a list of all membershipPlans in the system.
+            Accesssible by all.
+            </summary>
+            <returns>A list of membershipPlans or NoContent if none exist.</returns>
+            <remarks>
+            <response code="200">List of membershipPlans</response>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MembershipPlanController.GetMembershipPlanById(System.Guid)">
+            <summary>
+            Retrieves the membershipPlan's details by their ID.
+            Accesssible by all.
+            </summary>
+            <param name="id">The unique identifier of the membershipPlan.</param>
+            <returns>The details of the membershipPlan with the provided ID.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 404 Not Found: If no membershipPlan is found with the provided ID.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MembershipPlanController.CreateMembershipPlan(Backend.Dto.CreateDtos.MembershipPlanCreateDto)">
+            <summary>
+            Creates a new membershipPlan.
+            Only accessible by authenticated admins.
+            </summary>
+            <param name="membershipPlanDto">The membershipPlan creation request containing necessary details.</param>
+            <returns>The unique identifier of the created membershipPlan.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If the provided data is invalid (e.g., missing or incorrect fields).
+            - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MembershipPlanController.UpdateMembershipPlan(System.Guid,Backend.Dto.UpdateDtos.MembershipPlanUpdateDto)">
+            <summary>
+            Updates the membeshipPlan information.
+            Only accessible by authenticated admins.
+            </summary>
+            <param name="id">The unique identifier of the membershipPlan.</param>
+            <param name="membershipPlanDto">The membeshipPlan update request containing necessary details.</param>
+            <returns>A success response if the update is completed.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If the request data is invalid.
+            - 401 Unauthorized: If the administrator is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MembershipPlanController.DeleteMembershipPlan(System.Guid)">
+            <summary>
+            Deletes the membershipPlan by their ID.
+            Only accessible by authenticated admins.
+            </summary>
+            <param name="id">The unique identifier of the membershipPlan.</param>
+            <returns>A success response if the account deletion is completed.</returns>
+            <remarks>
+            Possible errors:
+            - 400 Bad Request: If there is an issue with the request.
+            - 401 Unauthorized: If the administrator is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MembershipPlanController.SetForDeletion(System.Guid)">
+            <summary>
+            Sets the ForDeletion property of the membershipPlan to true.
+            Only accessible by authenticated admins.
+            </summary>
+            <param name="id">The unique identifier of the membershipPlan.</param>
+            <returns>A success response if the membershipPlan was prepared for deletion.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the administrator is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MembershipPlanController.ResetForDeletion(System.Guid)">
+            <summary>
+            Sets the ForDeletion property of the membershipPlan to false.
+            Only accessible by authenticated admins.
+            </summary>
+            <param name="id">The unique identifier of the membershipPlan.</param>
+            <returns>A success response if the membershipPlan was set active.</returns>
+            <remarks>
+            Possible errors:
+            - 401 Unauthorized: If the administrator is not authenticated.
+            - 500 Internal Server Error: If an unexpected error occurs during processing.
+            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.MembershipPlanController.GetAuthenticatedAdminId">
+            <summary>
+            Retrieves the authenticated admin's ID from claims.
+            </summary>
+            <returns>Admin ID if authenticated, otherwise null.</returns>
+        </member>
+        <member name="T:Backend.Data.Context.MyDbContext">
+            <summary>
+            Represents the database context for the application.
+            It provides access to all the entity sets and configures database relationships.
+            </summary>
+        </member>
+        <member name="M:Backend.Data.Context.MyDbContext.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{Backend.Data.Context.MyDbContext},Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Data.Context.MyDbContext"/> class.
+            </summary>
+            <param name="options">The options for configuring the database context.</param>
+            <param name="configuration">The application configuration containing database connection strings.</param>
+        </member>
+        <member name="P:Backend.Data.Context.MyDbContext.Members">
+            <summary>
+            Gets or sets the members in the system.
+            </summary>
+        </member>
+        <member name="P:Backend.Data.Context.MyDbContext.Admins">
+            <summary>
+            Gets or sets the admins managing the system.
+            </summary>
+        </member>
+        <member name="P:Backend.Data.Context.MyDbContext.Memberships">
+            <summary>
+            Gets or sets the memberships associated with members.
+            </summary>
+        </member>
+        <member name="P:Backend.Data.Context.MyDbContext.MembershipPlans">
+            <summary>
+            Gets or sets the membership plans available for members.
+            </summary>
+        </member>
+        <member name="M:Backend.Data.Context.MyDbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)">
+            <summary>
+            Configures the database connection using the connection string from the configuration.
+            </summary>
+            <param name="optionsBuilder">The options builder for configuring the database context.</param>
+        </member>
+        <member name="M:Backend.Data.Context.MyDbContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <summary>
+            Configures the entity relationships, constraints, and seed data for the database.
+            </summary>
+            <param name="modelBuilder">The model builder for defining entity configurations.</param>
+        </member>
+        <member name="T:Backend.Data.IRepository.IAdminRepository">
+            <summary>
+            Defines methods for managing admin-related operations in the repository.
+            These operations include retrieving, creating, updating, deleting admin accounts, 
+            and handling admin password changes.
+            </summary>
+        </member>
+        <member name="M:Backend.Data.IRepository.IAdminRepository.GetAllAdmins">
+            <summary>
+            Retrieves all administrators.
+            </summary>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.AdminDto"/> representing all administrators.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IAdminRepository.GetAdminById(System.Nullable{System.Guid})">
+            <summary>
+            Retrieves an admin by their unique identifier.
+            </summary>
+            <param name="adminId">The unique identifier of the admin.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.AdminDto"/> of the admin if found; otherwise, null.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IAdminRepository.GetAdminByEmail(System.String)">
+            <summary>
+            Retrieves an admin by their email address.
+            </summary>
+            <param name="email">The email address of the admin.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.AdminDto"/> of the admin if found; otherwise, null.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IAdminRepository.CreateAdmin(Backend.Dto.CreateDtos.AdminCreateDto)">
+            <summary>
+            Creates a new admin account.
+            </summary>
+            <param name="adminDto">The DTO containing the admin details.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.AdminDto"/> of the newly created admin.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IAdminRepository.UpdateAdmin(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.AdminUpdateDto)">
+            <summary>
+            Updates an existing admin account.
+            </summary>
+            <param name="adminId">The unique identifier of the admin to update.</param>
+            <param name="adminDto">The DTO containing the updated admin details.</param>
+        </member>
+        <member name="M:Backend.Data.IRepository.IAdminRepository.DeleteAdmin(System.Nullable{System.Guid})">
+            <summary>
+            Deletes an admin account.
+            </summary>
+            <param name="adminId">The unique identifier of the admin to delete.</param>
+        </member>
+        <member name="M:Backend.Data.IRepository.IAdminRepository.ChangeAdminPassword(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.PasswordUpdateDto)">
+            <summary>
+            Changes an admin's password.
+            </summary>
+            <param name="adminId">The unique identifier of the admin whose password is being changed.</param>
+            <param name="passwordUpdateDto">The DTO containing the new password details.</param>
+        </member>
+        <member name="T:Backend.Data.IRepository.IMemberRepository">
+            <summary>
+            Defines methods for managing member-related operations in the repository.
+            These operations include retrieving, creating, updating, deleting member accounts,
+            and handling member password changes.
+            </summary>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMemberRepository.GetAllMembers">
+            <summary>
+            Retrieves all members.
+            </summary>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> representing all members.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMemberRepository.GetMemberById(System.Nullable{System.Guid})">
+            <summary>
+            Retrieves a member by their unique identifier.
+            </summary>
+            <param name="memberId">The unique identifier of the member.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> of the member if found; otherwise, null.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMemberRepository.GetMemberByMembershipId(System.Nullable{System.Guid})">
+            <summary>
+            Retrieves a member by their membership ID.
+            </summary>
+            <param name="id">The unique identifier of the membership.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> of the member if found; otherwise, null.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMemberRepository.GetMemberByEmail(System.String)">
+            <summary>
+            Retrieves a member by their email address.
+            </summary>
+            <param name="email">The email address of the member.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> of the member if found; otherwise, null.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMemberRepository.CreateMember(Backend.Dto.CreateDtos.MemberCreateDto,System.Guid)">
+            <summary>
+            Creates a new member account with the specified membership ID.
+            </summary>
+            <param name="memberCreateDto">The DTO containing member details.</param>
+            <param name="membershipId">The unique identifier of the membership associated with the member.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> of the newly created member.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMemberRepository.UpdateMember(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.MemberUpdateDto)">
+            <summary>
+            Updates an existing member account.
+            </summary>
+            <param name="memberId">The unique identifier of the member to update.</param>
+            <param name="memberUpdateDto">The DTO containing the updated member details.</param>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMemberRepository.DeleteMember(System.Nullable{System.Guid})">
+            <summary>
+            Deletes a member account.
+            </summary>
+            <param name="memberId">The unique identifier of the member to delete.</param>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMemberRepository.ChangeMemberPassword(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.PasswordUpdateDto)">
+            <summary>
+            Changes a member's password.
+            </summary>
+            <param name="memberId">The unique identifier of the member whose password is being changed.</param>
+            <param name="passwordUpdateDto">The DTO containing the new password details.</param>
+        </member>
+        <member name="T:Backend.Data.IRepository.IMembershipPlanRepository">
+            <summary>
+            Defines methods for managing membership plan-related operations in the repository.
+            These operations include retrieving, creating, updating, deleting membership plans, 
+            and setting a plan for deletion.
+            </summary>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipPlanRepository.GetAllMembershipPlans">
+            <summary>
+            Retrieves all available membership plans.
+            </summary>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MembershipPlanDto"/> representing all membership plans.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipPlanRepository.GetMembershipPlanById(System.Guid)">
+            <summary>
+            Retrieves a membership plan by its unique identifier.
+            </summary>
+            <param name="membershipPlanId">The unique identifier of the membership plan.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MembershipPlanDto"/> if found; otherwise, null.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipPlanRepository.CreateMembershipPlan(Backend.Dto.CreateDtos.MembershipPlanCreateDto,System.Nullable{System.Guid})">
+            <summary>
+            Creates a new membership plan.
+            </summary>
+            <param name="membershipPlanCreateDto">The DTO containing the membership plan details.</param>
+            <param name="adminId">The unique identifier of the admin creating the plan.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MembershipPlanDto"/> of the newly created membership plan.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipPlanRepository.UpdateMembershipPlan(System.Guid,Backend.Dto.UpdateDtos.MembershipPlanUpdateDto,System.Nullable{System.Guid})">
+            <summary>
+            Updates an existing membership plan.
+            </summary>
+            <param name="membershipPlanId">The unique identifier of the membership plan to update.</param>
+            <param name="membershipPlanUpdateDto">The DTO containing updated membership plan details.</param>
+            <param name="adminId">The unique identifier of the admin updating the plan.</param>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipPlanRepository.DeleteMembershipPlan(System.Guid)">
+            <summary>
+            Deletes a membership plan.
+            </summary>
+            <param name="membershipPlanId">The unique identifier of the membership plan to delete.</param>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipPlanRepository.SetPlanForDeletion(System.Guid)">
+            <summary>
+            Changes a membership plan ForDeletion property.
+            </summary>
+            <param name="id">The unique identifier of the membership plan to mark for deletion.</param>
+        </member>
+        <member name="T:Backend.Data.IRepository.IMembershipRepository">
+            <summary>
+            Defines methods for managing membership-related operations in the repository.
+            These operations include retrieving, creating, and updating membership records.
+            </summary>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipRepository.GetAllMemberships">
+            <summary>
+            Retrieves all memberships.
+            </summary>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MembershipDto"/> representing all memberships.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipRepository.GetMembershipById(System.Guid)">
+            <summary>
+            Retrieves a membership by its unique identifier.
+            </summary>
+            <param name="membershipId">The unique identifier of the membership.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MembershipDto"/> if found; otherwise, null.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipRepository.CreateMembership(Backend.Dto.CreateDtos.MembershipCreateDto)">
+            <summary>
+            Creates a new membership.
+            </summary>
+            <param name="membershipCreateDto">The DTO containing the new membership details.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MembershipDto"/> of the newly created membership.</returns>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipRepository.UpdateMembership(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.MembershipUpdateDto)">
+            <summary>
+            Updates an existing membership.
+            </summary>
+            <param name="membershipId">The unique identifier of the membership to update.</param>
+            <param name="membershipUpdateDto">The DTO containing updated membership details.</param>
+        </member>
+        <member name="T:Backend.Data.Repository.AdminRepository">
+            <summary>
+            Implements the <see cref="T:Backend.Data.IRepository.IAdminRepository"/> interface for managing admin-related operations.
+            </summary>
+        </member>
+        <member name="M:Backend.Data.Repository.AdminRepository.#ctor(Backend.Data.Context.MyDbContext,AutoMapper.IMapper)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Data.Repository.AdminRepository"/> class.
+            </summary>
+            <param name="context">The database context used for querying and saving admin data.</param>
+            <param name="mapper">The AutoMapper instance used for mapping entities to DTOs.</param>
+        </member>
+        <member name="M:Backend.Data.Repository.AdminRepository.GetAllAdmins">
+            <summary>
+            Retrieves all admins from the database.
+            </summary>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.AdminDto"/> representing all admins.</returns>
+        </member>
+        <member name="M:Backend.Data.Repository.AdminRepository.GetAdminById(System.Nullable{System.Guid})">
+            <summary>
+            Retrieves an admin by their unique identifier.
+            </summary>
+            <param name="id">The admin's ID.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.AdminDto"/> corresponding to the specified ID, or null if not found.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="id"/> is null.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.AdminRepository.GetAdminByEmail(System.String)">
+            <summary>
+            Retrieves an admin by their email address.
+            </summary>
+            <param name="email">The admin's email.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.AdminDto"/> corresponding to the specified email, or null if not found.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="email"/> is null.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.AdminRepository.CreateAdmin(Backend.Dto.CreateDtos.AdminCreateDto)">
+            <summary>
+            Creates a new admin in the database.
+            </summary>
+            <param name="adminDto">The DTO containing the details for the new admin.</param>
+            <returns>The created <see cref="T:Backend.Dto.BasicDtos.AdminDto"/>.</returns>
+        </member>
+        <member name="M:Backend.Data.Repository.AdminRepository.UpdateAdmin(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.AdminUpdateDto)">
+            <summary>
+            Updates the details of an existing admin.
+            </summary>
+            <param name="id">The ID of the admin to update.</param>
+            <param name="adminDto">The DTO containing the updated details for the admin.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="id"/> is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the admin is not found.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.AdminRepository.DeleteAdmin(System.Nullable{System.Guid})">
+            <summary>
+            Deletes an admin from the database.
+            </summary>
+            <param name="id">The ID of the admin to delete.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="id"/> is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the admin is not found.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.AdminRepository.ChangeAdminPassword(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.PasswordUpdateDto)">
+            <summary>
+            Changes the password of an admin.
+            </summary>
+            <param name="id">The ID of the admin whose password is to be changed.</param>
+            <param name="passwordUpdateDto">The DTO containing the current and new passwords.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="id"/> is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the admin is not found or the current password is incorrect.</exception>
+        </member>
+        <member name="T:Backend.Data.Repository.MemberRepository">
+            <summary>
+            Implements the <see cref="T:Backend.Data.IRepository.IMemberRepository"/> interface for managing member-related operations.
+            </summary>
+        </member>
+        <member name="M:Backend.Data.Repository.MemberRepository.#ctor(Backend.Data.Context.MyDbContext,AutoMapper.IMapper)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Data.Repository.MemberRepository"/> class.
+            </summary>
+            <param name="context">The database context used for querying and saving member data.</param>
+            <param name="mapper">The AutoMapper instance used for mapping entities to DTOs.</param>
+        </member>
+        <member name="M:Backend.Data.Repository.MemberRepository.GetAllMembers">
+            <summary>
+            Retrieves all members from the database.
+            </summary>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> representing all members.</returns>
+        </member>
+        <member name="M:Backend.Data.Repository.MemberRepository.GetMemberById(System.Nullable{System.Guid})">
+            <summary>
+            Retrieves a member by their unique ID.
+            </summary>
+            <param name="id">The members's ID.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> corresponding to the specified ID, or null if not found.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="id"/> is null.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.MemberRepository.GetMemberByMembershipId(System.Nullable{System.Guid})">
+            <summary>
+            Retrieves a member by their membership ID.
+            </summary>
+            <param name="id">The membership ID.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> corresponding to the specified membership ID, or null if not found.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="id"/> is null.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.MemberRepository.GetMemberByEmail(System.String)">
+            <summary>
+            Retrieves a member by their email address.
+            </summary>
+            <param name="email">The member's email.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> corresponding to the specified email, or null if not found.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="email"/> is null.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.MemberRepository.CreateMember(Backend.Dto.CreateDtos.MemberCreateDto,System.Guid)">
+            <summary>
+            Creates a new member in the database.
+            </summary>
+            <param name="memberDto">The DTO containing the details for the new member.</param>
+            <param name="membershipId">The ID of the associated membership.</param>
+            <returns>The created <see cref="T:Backend.Dto.BasicDtos.MemberDto"/>.</returns>
+        </member>
+        <member name="M:Backend.Data.Repository.MemberRepository.UpdateMember(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.MemberUpdateDto)">
+            <summary>
+            Updates an existing member in the database.
+            </summary>
+            <param name="id">The unique identifier of the member.</param>
+            <param name="memberDto">The member update data transfer object.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if the ID is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the member is not found.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.MemberRepository.DeleteMember(System.Nullable{System.Guid})">
+            <summary>
+            Deletes a member from the database.
+            </summary>
+            <param name="id">The ID of the member to delete.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if the ID is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the member is not found.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.MemberRepository.ChangeMemberPassword(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.PasswordUpdateDto)">
+            <summary>
+            Changes the password of a member.
+            </summary>
+            <param name="id">The ID of the member whose password is to be changed.</param>
+            <param name="passwordUpdateDto">The DTO containing the current and new passwords.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="id"/> is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the member is not found or the current password is incorrect.</exception>
+        </member>
+        <member name="T:Backend.Data.Repository.MembershipPlanRepository">
+            <summary>
+            Implements the <see cref="T:Backend.Data.IRepository.IMembershipPlanRepository"/> interface for managing membership plan-related operations.
+            </summary>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipPlanRepository.#ctor(Backend.Data.Context.MyDbContext,AutoMapper.IMapper)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Data.Repository.MembershipPlanRepository"/> class.
+            </summary>
+            <param name="context">The database context used for querying and saving membership plan data.</param>
+            <param name="mapper">The AutoMapper instance used for mapping entities to DTOs.</param>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipPlanRepository.GetAllMembershipPlans">
+            <summary>
+            Retrieves all membership plans from the database.
+            </summary>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MembershipPlanDto"/> representing all membership plans.</returns>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipPlanRepository.GetMembershipPlanById(System.Guid)">
+            <summary>
+            Retrieves a membership plan by its unique ID.
+            </summary>
+            <param name="id">The memberships's ID.</param>
+            <returns>The corresponding <see cref="T:Backend.Dto.BasicDtos.MembershipPlanDto"/>.</returns>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipPlanRepository.CreateMembershipPlan(Backend.Dto.CreateDtos.MembershipPlanCreateDto,System.Nullable{System.Guid})">
+            <summary>
+            Creates a new membership plan.
+            </summary>
+            <param name="membershipPlanDto">The DTO containing the details for the new membership plan.</param>
+            <param name="adminId">The unique identifier of the admin responsible for the plan.</param>
+            <returns>The created <see cref="T:Backend.Dto.BasicDtos.MembershipPlanDto"/>.</returns>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipPlanRepository.UpdateMembershipPlan(System.Guid,Backend.Dto.UpdateDtos.MembershipPlanUpdateDto,System.Nullable{System.Guid})">
+            <summary>
+            Updates the details of an membership plan.
+            </summary>
+            <param name="id">The ID of the membership plan to update.</param>
+            <param name="membershipPlanDto">The DTO containing updated details for the membership plan.</param>
+            <param name="adminId">The unique identifier of the admin responsible for the plan.</param>
+            <exception cref="T:System.ArgumentException">Thrown if the membership plan is not found.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipPlanRepository.DeleteMembershipPlan(System.Guid)">
+            <summary>
+            Deletes a membership plan if it is marked for deletion and has no active memberships.
+            </summary>
+            <param name="id">The ID of the membership plan to delete.</param>
+            <exception cref="T:System.ArgumentException">Thrown if the membership plan is not found.</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown if the plan is not marked for deletion or has active memberships.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipPlanRepository.SetPlanForDeletion(System.Guid)">
+            <summary>
+            Toggles the deletion status of a membership plan.
+            </summary>
+            <param name="id">The unique identifier of the membership plan to update.</param>
+            <exception cref="T:System.ArgumentException">Thrown if the membership plan is not found.</exception>
+        </member>
+        <member name="T:Backend.Data.Repository.MembershipRepository">
+            <summary>
+            Implements the <see cref="T:Backend.Data.IRepository.IMembershipRepository"/> interface for managing membership-related operations.
+            </summary>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipRepository.#ctor(Backend.Data.Context.MyDbContext,AutoMapper.IMapper)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Data.Repository.MembershipRepository"/> class.
+            </summary>
+            <param name="context">The database context used for querying and saving membership data.</param>
+            <param name="mapper">The AutoMapper instance used for mapping entities to DTOs.</param>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipRepository.GetAllMemberships">
+            <summary>
+            Retrieves all memberships from the database.
+            </summary>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MembershipDto"/> representing all memberships.</returns>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipRepository.GetMembershipById(System.Guid)">
+            <summary>
+            Retrieves an membership by their unique identifier.
+            </summary>
+            <param name="id">The memberships's ID.</param>
+            <returns>The <see cref="T:Backend.Dto.BasicDtos.MembershipDto"/> corresponding to the specified ID, or null if not found.</returns>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipRepository.CreateMembership(Backend.Dto.CreateDtos.MembershipCreateDto)">
+            <summary>
+            Creates a new membership in the database.
+            </summary>
+            <param name="membershipDto">The DTO containing the details for the new membership.</param>
+            <returns>The created <see cref="T:Backend.Dto.BasicDtos.MembershipDto"/>.</returns>
+            <exception cref="T:System.ArgumentException">Thrown when the specified membership plan is not found.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipRepository.UpdateMembership(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.MembershipUpdateDto)">
+            <summary>
+            Updates the details of an existing membership.
+            </summary>
+            <param name="id">The ID of the membership to update.</param>
+            <param name="membershipDto">The DTO containing the updated details for the membership.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when the provided ID is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when the membership or plan is not found, or when attempting to renew an active membership.</exception>
+        </member>
+        <member name="T:Backend.Dto.BasicDtos.AdminDto">
+            <summary>
+            Data Transfer Object for Admin entity.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.AdminDto.AdminId">
+            <summary>
+            Unique identifier for the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.AdminDto.AdminName">
+            <summary>
+            First name of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.AdminDto.AdminSurname">
+            <summary>
+            Surname of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.AdminDto.AdminEmail">
+            <summary>
+            Email address of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.AdminDto.AdminPhone">
+            <summary>
+            Contact phone number of the admin.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.BasicDtos.LoginDto">
+            <summary>
+            Data Transfer Object for login credentials.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.LoginDto.Email">
+            <summary>
+            Email address of the user.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.LoginDto.Password">
+            <summary>
+            Password for authentication.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.BasicDtos.MemberDto">
+            <summary>
+            Data Transfer Object for Member entity.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MemberDto.MemberId">
+            <summary>
+            Unique identifier for the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MemberDto.MemberName">
+            <summary>
+            First name of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MemberDto.MemberSurname">
+            <summary>
+            Surname of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MemberDto.MemberEmail">
+            <summary>
+            Email address of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MemberDto.MemberPhone">
+            <summary>
+            Contact phone number of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MemberDto.MembershipId">
+            <summary>
+            Unique identifier for the associated membership.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MemberDto.Membership">
+            <summary>
+            Membership details associated with the member.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.BasicDtos.MembershipDto">
+            <summary>
+            Data Transfer Object for Membership entity.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipDto.MembershipID">
+            <summary>
+            Unique identifier for the membership.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipDto.MembershipFrom">
+            <summary>
+            Start date of the membership.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipDto.MembershipTo">
+            <summary>
+            Expiry date of the membership.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipDto.PlanDuration">
+            <summary>
+            Duration of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipDto.MembershipFee">
+            <summary>
+            Membership fee amount.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipDto.IsFeePaid">
+            <summary>
+            Indicates if the membership fee has been paid.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipDto.MembershipPlanId">
+            <summary>
+            Unique identifier of the associated membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipDto.MembershipPlan">
+            <summary>
+            Membership plan details associated with this membership.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.BasicDtos.MembershipPlanDto">
+            <summary>
+            Data Transfer Object for Membership Plan entity.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipPlanDto.PlanID">
+            <summary>
+            Unique identifier for the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipPlanDto.PlanName">
+            <summary>
+            Name of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipPlanDto.PlanDescription">
+            <summary>
+            Description of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipPlanDto.PlanPrice">
+            <summary>
+            Price of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipPlanDto.ForDeletion">
+            <summary>
+            Indicates if the plan is marked for deletion.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipPlanDto.AdminID">
+            <summary>
+            Unique identifier of the admin who manages the plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipPlanDto.Admin">
+            <summary>
+            Admin details associated with this plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.BasicDtos.MembershipPlanDto.Memberships">
+            <summary>
+            Collection of memberships associated with this plan.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.CreateDtos.AdminCreateDto">
+            <summary>
+            Data Transfer Object for creating an Admin entity.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.AdminCreateDto.AdminName">
+            <summary>
+            First name of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.AdminCreateDto.AdminSurname">
+            <summary>
+            Surname of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.AdminCreateDto.AdminEmail">
+            <summary>
+            Email address of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.AdminCreateDto.AdminPhone">
+            <summary>
+            Phone number of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.AdminCreateDto.AdminHashedPassword">
+            <summary>
+            Secure password for the admin.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.CreateDtos.MemberCreateDto">
+            <summary>
+            Data Transfer Object for creating a Member entity.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MemberCreateDto.MemberName">
+            <summary>
+            First name of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MemberCreateDto.MemberSurname">
+            <summary>
+            Surname of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MemberCreateDto.MemberEmail">
+            <summary>
+            Email address of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MemberCreateDto.MemberPhone">
+            <summary>
+            Phone number of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MemberCreateDto.MemberHashedPassword">
+            <summary>
+            Secure password for the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MemberCreateDto.Membership">
+            <summary>
+            Membership details for the member.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.CreateDtos.MembershipCreateDto">
+            <summary>
+            Data Transfer Object for creating a Membership entity.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MembershipCreateDto.PlanDuration">
+            <summary>
+            Duration of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MembershipCreateDto.MembershipPlanID">
+            <summary>
+            Unique identifier for the selected membership plan.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.CreateDtos.MembershipPlanCreateDto">
+            <summary>
+            Data Transfer Object for creating a new membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MembershipPlanCreateDto.PlanName">
+            <summary>
+            Name of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MembershipPlanCreateDto.PlanDescription">
+            <summary>
+            Description of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.CreateDtos.MembershipPlanCreateDto.PlanPrice">
+            <summary>
+            Price of the membership plan.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.UpdateDtos.AdminUpdateDto">
+            <summary>
+            Data Transfer Object for updaing an Admin entity.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.AdminUpdateDto.AdminName">
+            <summary>
+            First name of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.AdminUpdateDto.AdminSurname">
+            <summary>
+            Surname of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.AdminUpdateDto.AdminEmail">
+            <summary>
+            Email address of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.AdminUpdateDto.AdminPhone">
+            <summary>
+            Phone number of the admin.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.UpdateDtos.MembershipPlanUpdateDto">
+            <summary>
+            Data Transfer Object for creating a new membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.MembershipPlanUpdateDto.PlanName">
+            <summary>
+            Name of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.MembershipPlanUpdateDto.PlanDescription">
+            <summary>
+            Description of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.MembershipPlanUpdateDto.PlanPrice">
+            <summary>
+            Price of the membership plan.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.UpdateDtos.MembershipUpdateDto">
+            <summary>
+            Data Transfer Object for updating a Membership entity.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.MembershipUpdateDto.PlanDuration">
+            <summary>
+            Duration of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.MembershipUpdateDto.MembershipPlanID">
+            <summary>
+            Unique identifier for the selected membership plan.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.UpdateDtos.MemberUpdateDto">
+            <summary>
+            Data Transfer Object for updating a Memberr entity.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.MemberUpdateDto.MemberName">
+            <summary>
+            First name of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.MemberUpdateDto.MemberSurname">
+            <summary>
+            Surname of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.MemberUpdateDto.MemberEmail">
+            <summary>
+            Email address of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.MemberUpdateDto.MemberPhone">
+            <summary>
+            Phone number of the member.
+            </summary>
+        </member>
+        <member name="T:Backend.Dto.UpdateDtos.PasswordUpdateDto">
+            <summary>
+            DTO for updating a user's password.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.PasswordUpdateDto.CurrentPassword">
+            <summary>
+            The user's password.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.PasswordUpdateDto.NewPassword">
+            <summary>
+            The new password for the user.
+            </summary>
+        </member>
+        <member name="P:Backend.Dto.UpdateDtos.PasswordUpdateDto.ConfirmNewPassword">
+            <summary>
+            The new password for the user again.
+            </summary>
+        </member>
+        <member name="T:Backend.Entities.Admin">
+            <summary>
+            Represents an administrator with specific privileges and authentication details.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Admin.AdminId">
+            <summary>
+            Unique identifier for the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Admin.AdminName">
+            <summary>
+            First name of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Admin.AdminSurname">
+            <summary>
+            Surname of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Admin.AdminEmail">
+            <summary>
+            Email address of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Admin.AdminPhone">
+            <summary>
+            Phone number of the admin.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Admin.AdminHashedPassword">
+            <summary>
+            Hashed password of the admin.
+            </summary>
+        </member>
+        <member name="T:Backend.Entities.Member">
+            <summary>
+            Represents a member entity with personal details and membership information.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Member.MemberId">
+            <summary>
+            Unique identifier for the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Member.MemberName">
+            <summary>
+            First name of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Member.MemberSurname">
+            <summary>
+            Surname of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Member.MemberEmail">
+            <summary>
+            Email address of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Member.MemberPhone">
+            <summary>
+            Phone number of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Member.MemberHashedPassword">
+            <summary>
+            Hashed password of the member.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Member.MembershipID">
+            <summary>
+            Foreign key referencing the associated membership.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Member.Membership">
+            <summary>
+            Navigation property for the associated membership.
+            </summary>
+        </member>
+        <member name="T:Backend.Entities.Membership">
+            <summary>
+            Represents a membership entity containing subscription details for a member.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Membership.MembershipID">
+            <summary>
+            Unique identifier for the membership.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Membership.MembershipFrom">
+            <summary>
+            Date when the membership starts.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Membership.MembershipTo">
+            <summary>
+            Date when the membership ends.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Membership.PlanDuration">
+            <summary>
+            Duration of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Membership.MembershipFee">
+            <summary>
+            Membership fee amount.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Membership.IsFeePaid">
+            <summary>
+            Indicates whether the membership fee has been paid.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Membership.MembershipPlanID">
+            <summary>
+            Foreign key linking to the Membership Plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.Membership.MembershipPlan">
+            <summary>
+            Navigation property for the associated Membership Plan.
+            </summary>
+        </member>
+        <member name="T:Backend.Entities.MembershipPlan">
+            <summary>
+            Represents a membership plan with pricing and administrative assignment.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.MembershipPlan.PlanID">
+            <summary>
+            Unique identifier for the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.MembershipPlan.PlanName">
+            <summary>
+            Name of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.MembershipPlan.PlanDescription">
+            <summary>
+            Description of the membership plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.MembershipPlan.PlanPrice">
+            <summary>
+            Membership plan fee amount.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.MembershipPlan.AdminID">
+            <summary>
+            Foreign key referencing the admin responsible for the plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.MembershipPlan.ForDeletion">
+            <summary>
+            Indicates if the membership plan is marked for deletion.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.MembershipPlan.Admin">
+            <summary>
+            The admin responsible for the latest changes on the plan.
+            </summary>
+        </member>
+        <member name="P:Backend.Entities.MembershipPlan.Memberships">
+            <summary>
+            Collection of memberships associated with this plan.
+            </summary>
+        </member>
+        <member name="T:Backend.Enums.Duration">
+            <summary>
+            Represents the available durations for a membership plan.
+            </summary>
+        </member>
+        <member name="F:Backend.Enums.Duration.OneMonth">
+            <summary>
+            Membership valid for one month.
+            </summary>
+        </member>
+        <member name="F:Backend.Enums.Duration.ThreeMonths">
+            <summary>
+            Membership valid for three months.
+            </summary>
+        </member>
+        <member name="F:Backend.Enums.Duration.SixMonths">
+            <summary>
+            Membership valid for six months.
+            </summary>
+        </member>
+        <member name="F:Backend.Enums.Duration.OneYear">
+            <summary>
+            Membership valid for one year.
+            </summary>
+        </member>
+        <member name="T:Backend.Migrations.InitialMigration">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.InitialMigration.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.InitialMigration.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.InitialMigration.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Backend.Migrations.ChangedOnDeleteToCascade">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.ChangedOnDeleteToCascade.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.ChangedOnDeleteToCascade.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.ChangedOnDeleteToCascade.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Backend.Migrations.ChangedOnDeleteToCascade2">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.ChangedOnDeleteToCascade2.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.ChangedOnDeleteToCascade2.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.ChangedOnDeleteToCascade2.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Backend.Profiles.AdminProfile">
+            <summary>
+            AutoMapper profile for mapping between <see cref="T:Backend.Entities.Admin"/> entity and corresponding DTOs.
+            </summary>
+        </member>
+        <member name="M:Backend.Profiles.AdminProfile.#ctor">
+            <summary>
+            Initializes the mappings between <see cref="T:Backend.Entities.Admin"/> and its DTOs.
+            </summary>
+        </member>
+        <member name="T:Backend.Profiles.MemberProfile">
+            <summary>
+            AutoMapper profile for mapping between <see cref="T:Backend.Entities.Member"/> entity and corresponding DTOs.
+            </summary>
+        </member>
+        <member name="M:Backend.Profiles.MemberProfile.#ctor">
+            <summary>
+            Initializes the mappings between <see cref="T:Backend.Entities.Member"/> and its DTOs.
+            </summary>
+        </member>
+        <member name="T:Backend.Profiles.MembershipPlanProfile">
+            <summary>
+            AutoMapper profile for mapping between <see cref="T:Backend.Entities.MembershipPlan"/> entity and corresponding DTOs.
+            </summary>
+        </member>
+        <member name="M:Backend.Profiles.MembershipPlanProfile.#ctor">
+            <summary>
+            Initializes the mappings between <see cref="T:Backend.Entities.MembershipPlan"/> and its DTOs.
+            </summary>
+        </member>
+        <member name="T:Backend.Profiles.MembershipProfile">
+            <summary>
+            AutoMapper profile for mapping between <see cref="T:Backend.Entities.Membership"/> entity and corresponding DTOs.
+            </summary>
+        </member>
+        <member name="M:Backend.Profiles.MembershipProfile.#ctor">
+            <summary>
+            Initializes the mappings between <see cref="T:Backend.Entities.Membership"/> and its DTOs.
+            </summary>
+        </member>
+        <member name="T:Backend.Program">
+            <summary>
+            The entry point for the application.
+            This class is responsible for configuring and running the ASP.NET Core web host.
+            It sets up the application to use the Startup class for configuration and initialization.
+            </summary>
+        </member>
+        <member name="M:Backend.Program.Main(System.String[])">
+            <summary>
+            The main entry point of the application.
+            It builds and runs the host for the ASP.NET Core application.
+            </summary>
+            <param name="args">Command line arguments passed to the application.</param>
+        </member>
+        <member name="M:Backend.Program.CreateHostBuilder(System.String[])">
+            <summary>
+            Creates a host builder that configures the web host for the application.
+            This method is called by the Main method to set up and configure the ASP.NET Core application.
+            </summary>
+            <param name="args">Command line arguments passed to the application.</param>
+            <returns>An <see cref="T:Microsoft.Extensions.Hosting.IHostBuilder"/> that is used to configure the web host.</returns>
+        </member>
+        <member name="T:Backend.Startup">
+            <summary>
+            The Startup class is responsible for configuring the services and the middleware pipeline for the application.
+            This class sets up essential configurations like dependency injection, authentication, authorization,
+            database context, and third-party libraries (like Swagger and AutoMapper).
+            </summary>
+        </member>
+        <member name="P:Backend.Startup.Configuration">
+            <summary>
+            Gets the configuration settings for the application. This property is used to access various configuration values.
+            </summary>
+        </member>
+        <member name="M:Backend.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Startup"/> class.
+            </summary>
+            <param name="configuration">The configuration settings from appsettings.json.</param>
+        </member>
+        <member name="M:Backend.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configures the services to be used by the application.
+            This includes adding services like AutoMapper, database context, repositories, authentication, and Swagger.
+            </summary>
+            <param name="services">The service collection where services are registered.</param>
+        </member>
+        <member name="M:Backend.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <summary>
+            Configures the application's middleware pipeline.
+            This includes setting up middleware for error handling, authentication, routing, and CORS.
+            </summary>
+            <param name="app">The application builder to configure middleware.</param>
+            <param name="env">The environment the application is running in (e.g., Development, Production).</param>
+        </member>
+        <member name="T:Backend.Utils.CustomExceptions.BadRequestException">
+            <summary>
+            Represents an error that occurs when a bad request is made, typically due to invalid input or parameters.
+            This exception is often used to indicate client-side errors.
+            </summary>
+        </member>
+        <member name="M:Backend.Utils.CustomExceptions.BadRequestException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Utils.CustomExceptions.BadRequestException"/> class with a default error message.
+            </summary>
+        </member>
+        <member name="M:Backend.Utils.CustomExceptions.BadRequestException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Utils.CustomExceptions.BadRequestException"/> class with a specified error message.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+        </member>
+        <member name="M:Backend.Utils.CustomExceptions.BadRequestException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Utils.CustomExceptions.BadRequestException"/> class with a specified error message
+            and a reference to the inner exception that is the cause of this exception.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception.</param>
+        </member>
+        <member name="T:Backend.Utils.CustomExceptions.EmailAlreadyInUseException">
+            <summary>
+            Represents an error that occurs when an attempt is made to register or update an email address that is already in use.
+            This exception is typically thrown during user registration or profile updates when the email is already associated with an existing account.
+            </summary>
+        </member>
+        <member name="M:Backend.Utils.CustomExceptions.EmailAlreadyInUseException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Utils.CustomExceptions.EmailAlreadyInUseException"/> class with a default error message indicating that the email is already taken.
+            </summary>
+        </member>
+        <member name="M:Backend.Utils.CustomExceptions.EmailAlreadyInUseException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Utils.CustomExceptions.EmailAlreadyInUseException"/> class with a specified error message.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+        </member>
+        <member name="M:Backend.Utils.CustomExceptions.EmailAlreadyInUseException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Utils.CustomExceptions.EmailAlreadyInUseException"/> class with a specified error message
+            and a reference to the inner exception that is the cause of this exception.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception.</param>
+        </member>
+        <member name="T:Backend.Utils.CustomExceptions.NotFoundException">
+            <summary>
+            Represents an error that occurs when a requested resource is not found.
+            This exception is typically thrown when a resource (such as an entity or record) does not exist in the system,
+            and the operation cannot proceed without it.
+            </summary>
+        </member>
+        <member name="M:Backend.Utils.CustomExceptions.NotFoundException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Utils.CustomExceptions.NotFoundException"/> class with a default error message 
+            indicating that the requested resource was not found.
+            </summary>
+        </member>
+        <member name="M:Backend.Utils.CustomExceptions.NotFoundException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Utils.CustomExceptions.NotFoundException"/> class with a specified error message.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+        </member>
+        <member name="M:Backend.Utils.CustomExceptions.NotFoundException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Backend.Utils.CustomExceptions.NotFoundException"/> class with a specified error message 
+            and a reference to the inner exception that is the cause of this exception.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception.</param>
+        </member>
+        <member name="T:Backend.Utils.PasswordHasher">
+            <summary>
+            Provides methods for hashing and verifying passwords using the BCrypt hashing algorithm.
+            </summary>
+        </member>
+        <member name="M:Backend.Utils.PasswordHasher.HashPassword(System.String)">
+            <summary>
+            Hashes the provided password using the BCrypt hashing algorithm.
+            </summary>
+            <param name="password">The password to be hashed.</param>
+            <returns>A hashed representation of the password.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if the password is null or empty.</exception>
+        </member>
+        <member name="M:Backend.Utils.PasswordHasher.VerifyPassword(System.String,System.String)">
+            <summary>
+            Verifies that the provided password matches the stored hashed password.
+            </summary>
+            <param name="password">The plain-text password to verify.</param>
+            <param name="hashedPassword">The hashed password to compare against.</param>
+            <returns><c>true</c> if the password matches the hashed password; otherwise, <c>false</c>.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if either the password or hashed password is null or empty.</exception>
+        </member>
+    </members>
+</doc>

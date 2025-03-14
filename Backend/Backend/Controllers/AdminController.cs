@@ -1,18 +1,19 @@
-﻿using AutoMapper;
-using Backend.Data.IRepository;
-using Backend.Data.Repository;
+﻿using Backend.Data.IRepository;
 using Backend.Dto.BasicDtos;
 using Backend.Dto.CreateDtos;
 using Backend.Dto.UpdateDtos;
-using Backend.Dto.UpdateDtos.Backend.Dto.UpdateDtos;
 using Backend.Utils.CustomExceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace Backend.Controllers
 {
+    /// <summary>
+    /// Controller responsible for managing administrator-related operations,
+    /// such as retrieving, creating, updating, and deleting admin accounts.
+    /// Requires Admin role authorization for all actions.
+    /// </summary>
     [Route("api/admin")]
     [ApiController]
     public class AdminController : ControllerBase
@@ -21,6 +22,12 @@ namespace Backend.Controllers
         private readonly IMemberRepository memberRepository;
         private readonly ILogger<AdminController> logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AdminController"/> class.
+        /// </summary>
+        /// <param name="adminRepository">Service for handling admin-related database operations.</param>
+        /// <param name="memberRepository">Service for handling member-related database operations.</param>
+        /// <param name="logger">Logger for capturing controller activity.</param>
         public AdminController(IAdminRepository adminRepository, IMemberRepository memberRepository, ILogger<AdminController> logger)
         {
             this.adminRepository = adminRepository;
@@ -28,6 +35,15 @@ namespace Backend.Controllers
             this.logger = logger;
         }
 
+        /// <summary>
+        /// Retrieves a list of all administrators in the system.
+        /// </summary>
+        /// <returns>A list of administrators or NoContent if none exist.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -45,6 +61,16 @@ namespace Backend.Controllers
             return Ok(admins);
         }
 
+        /// <summary>
+        /// Retrieves the information of the currently authenticated administrator.
+        /// </summary>
+        /// <returns>The details of the authenticated administrator.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 401 Unauthorized: If the user is not authenticated.
+        /// - 404 Not Found: If no admin is found with the provided authenticated ID.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpGet("myInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -67,6 +93,17 @@ namespace Backend.Controllers
              return Ok(admin);
         }
 
+        /// <summary>
+        /// Retrieves the administrator's details by their ID.
+        /// </summary>
+        /// <param name="id">The unique identifier of the administrator.</param>
+        /// <returns>The details of the administrator with the provided ID.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+        /// - 404 Not Found: If no admin is found with the provided ID.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -84,6 +121,17 @@ namespace Backend.Controllers
             return Ok(admin);
         }
 
+        /// <summary>
+        /// Retrieves an administrator's details by their email address.
+        /// </summary>
+        /// <param name="email">The email address of the administrator.</param>
+        /// <returns>The details of the administrator with the provided email.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+        /// - 404 Not Found: If no admin is found with the provided email.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpGet("email")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -103,12 +151,25 @@ namespace Backend.Controllers
             return Ok(admin);
         }
 
+        /// <summary>
+        /// Creates a new administrator account.
+        /// </summary>
+        /// <param name="adminDto">The admin creation request containing necessary details.</param>
+        /// <returns>The unique identifier of the created administrator.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 400 Bad Request: If the provided data is invalid (e.g., missing or incorrect fields).
+        /// - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+        /// - 409 Conflict: If the provided email address is already in use.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Guid>> CreateAdmin(AdminCreateDto adminDto)
         {
@@ -131,6 +192,17 @@ namespace Backend.Controllers
             return CreatedAtAction(nameof(GetAdminById), new { id = admin.AdminId }, admin);
         }
 
+        /// <summary>
+        /// Updates the authenticated administrator's profile information.
+        /// </summary>
+        /// <param name="adminDto">The admin update request containing necessary details.</param>
+        /// <returns>A success response if the update is completed.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 400 Bad Request: If the request data is invalid.
+        /// - 401 Unauthorized: If the administrator is not authenticated.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -159,6 +231,16 @@ namespace Backend.Controllers
             return Ok("Successfully updated admin!");    
         }
 
+        /// <summary>
+        /// Deletes the currently authenticated administrator account.
+        /// </summary>
+        /// <returns>A success response if the account deletion is completed.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 400 Bad Request: If there is an issue with the request.
+        /// - 401 Unauthorized: If the administrator is not authenticated.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -177,6 +259,18 @@ namespace Backend.Controllers
             logger.LogInformation("Admin with ID: {AdminId} deleted successfully", authenticatedAdminId);
             return NoContent();
         }
+
+        /// <summary>
+        /// Changes the password for the authenticated administrator.
+        /// </summary>
+        /// <param name="passwordUpdateDto">The password update request containing the old and new password.</param>
+        /// <returns>A success response if the password change is completed.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 400 Bad Request: If the provided data is invalid.
+        /// - 401 Unauthorized: If the administrator is not authenticated.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
 
         [Authorize(Roles = "Admin")]
         [HttpPatch]
@@ -207,6 +301,10 @@ namespace Backend.Controllers
             return Ok("Password updated!");
         }
 
+        /// <summary>
+        /// Retrieves the authenticated admin's ID from claims.
+        /// </summary>
+        /// <returns>Admin ID if authenticated, otherwise null.</returns>
         private Guid? GetAuthenticatedAdminId()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;

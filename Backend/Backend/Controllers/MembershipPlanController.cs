@@ -15,6 +15,10 @@ using System.Security.Claims;
 
 namespace Backend.Controllers
 {
+    /// <summary>
+    /// Controller responsible for managing membershipPlan-related operations,
+    /// such as retrieving, creating, updating, and deleting membership plans.
+    /// </summary>
     [Route("api/membershipPlan")]
     [ApiController]
     public class MembershipPlanController : ControllerBase
@@ -22,6 +26,11 @@ namespace Backend.Controllers
         private readonly IMembershipPlanRepository membershipPlanRepository;
         private readonly ILogger<MembershipPlanController> logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MembershipPlanController"/> class.
+        /// </summary>
+        /// <param name="membershipPlanRepository">Service for handling membershipPlan-related database operations.</param>
+        /// <param name="logger">Logger for capturing controller activity.</param>
         public MembershipPlanController(IMembershipPlanRepository membershipPlanRepository, ILogger<MembershipPlanController> logger)
         {
             this.membershipPlanRepository = membershipPlanRepository;
@@ -29,10 +38,21 @@ namespace Backend.Controllers
         }
 
 
+        /// <summary>
+        /// Retrieves a list of all membershipPlans in the system.
+        /// Accesssible by all.
+        /// </summary>
+        /// <returns>A list of membershipPlans or NoContent if none exist.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<MembershipPlanDto>>> GetAllMembershipPlans()
         {
@@ -46,6 +66,18 @@ namespace Backend.Controllers
             return Ok(membershipPlans);
         }
 
+        /// <summary>
+        /// Retrieves the membershipPlan's details by their ID.
+        /// Accesssible by all.
+        /// </summary>
+        /// <param name="id">The unique identifier of the membershipPlan.</param>
+        /// <returns>The details of the membershipPlan with the provided ID.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+        /// - 404 Not Found: If no membershipPlan is found with the provided ID.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -63,6 +95,18 @@ namespace Backend.Controllers
             return Ok(membershipPlan);
         }
 
+        /// <summary>
+        /// Creates a new membershipPlan.
+        /// Only accessible by authenticated admins.
+        /// </summary>
+        /// <param name="membershipPlanDto">The membershipPlan creation request containing necessary details.</param>
+        /// <returns>The unique identifier of the created membershipPlan.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 400 Bad Request: If the provided data is invalid (e.g., missing or incorrect fields).
+        /// - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [Consumes("application/json")]
@@ -93,6 +137,19 @@ namespace Backend.Controllers
             return CreatedAtAction(nameof(GetMembershipPlanById), new { id = membershipPlan.PlanID }, membershipPlan);
         }
 
+        /// <summary>
+        /// Updates the membeshipPlan information.
+        /// Only accessible by authenticated admins.
+        /// </summary>
+        /// <param name="id">The unique identifier of the membershipPlan.</param>
+        /// <param name="membershipPlanDto">The membeshipPlan update request containing necessary details.</param>
+        /// <returns>A success response if the update is completed.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 400 Bad Request: If the request data is invalid.
+        /// - 401 Unauthorized: If the administrator is not authenticated.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -120,6 +177,18 @@ namespace Backend.Controllers
             return Ok("Successfully updated membership plan!");
         }
 
+        /// <summary>
+        /// Deletes the membershipPlan by their ID.
+        /// Only accessible by authenticated admins.
+        /// </summary>
+        /// <param name="id">The unique identifier of the membershipPlan.</param>
+        /// <returns>A success response if the account deletion is completed.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 400 Bad Request: If there is an issue with the request.
+        /// - 401 Unauthorized: If the administrator is not authenticated.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -134,11 +203,21 @@ namespace Backend.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Sets the ForDeletion property of the membershipPlan to true.
+        /// Only accessible by authenticated admins.
+        /// </summary>
+        /// <param name="id">The unique identifier of the membershipPlan.</param>
+        /// <returns>A success response if the membershipPlan was prepared for deletion.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 401 Unauthorized: If the administrator is not authenticated.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpPatch("setForDeletion/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SetForDeletion(Guid id)
         {
@@ -146,6 +225,18 @@ namespace Backend.Controllers
             await membershipPlanRepository.SetPlanForDeletion(id);
             return Ok("Successfully set membership plan for deletion!");
         }
+
+        /// <summary>
+        /// Sets the ForDeletion property of the membershipPlan to false.
+        /// Only accessible by authenticated admins.
+        /// </summary>
+        /// <param name="id">The unique identifier of the membershipPlan.</param>
+        /// <returns>A success response if the membershipPlan was set active.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 401 Unauthorized: If the administrator is not authenticated.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpPatch("resetForDeletion/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -158,6 +249,11 @@ namespace Backend.Controllers
             await membershipPlanRepository.SetPlanForDeletion(id);
             return Ok("Successfully set membership plan active!");
         }
+
+        /// <summary>
+        /// Retrieves the authenticated admin's ID from claims.
+        /// </summary>
+        /// <returns>Admin ID if authenticated, otherwise null.</returns>
         private Guid? GetAuthenticatedAdminId()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;

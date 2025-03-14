@@ -12,16 +12,29 @@ using System.Numerics;
 
 namespace Backend.Data.Repository
 {
+    /// <summary>
+    /// Implements the <see cref="IMembershipRepository"/> interface for managing membership-related operations.
+    /// </summary>
     public class MembershipRepository : IMembershipRepository
     {
         private readonly MyDbContext context;
         private readonly IMapper mapper;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MembershipRepository"/> class.
+        /// </summary>
+        /// <param name="context">The database context used for querying and saving membership data.</param>
+        /// <param name="mapper">The AutoMapper instance used for mapping entities to DTOs.</param>
         public MembershipRepository(MyDbContext context, IMapper mapper)
         {
             this.context = context;
             this.mapper = mapper;
         }
+
+        /// <summary>
+        /// Retrieves all memberships from the database.
+        /// </summary>
+        /// <returns>A collection of <see cref="MembershipDto"/> representing all memberships.</returns>
         public async Task<IEnumerable<MembershipDto>> GetAllMemberships()
         {
             var memberships = await context.Memberships
@@ -31,8 +44,14 @@ namespace Backend.Data.Repository
             return mapper.Map<IEnumerable<MembershipDto>>(memberships);
         }
 
+        /// <summary>
+        /// Retrieves an membership by their unique identifier.
+        /// </summary>
+        /// <param name="id">The memberships's ID.</param>
+        /// <returns>The <see cref="MembershipDto"/> corresponding to the specified ID, or null if not found.</returns>
         public async Task<MembershipDto> GetMembershipById(Guid id)
         {
+           
             var membership = await context.Memberships
                 .Include(m => m.MembershipPlan)
                 .ThenInclude(ma => ma.Admin)
@@ -40,6 +59,12 @@ namespace Backend.Data.Repository
             return mapper.Map<MembershipDto>(membership);
         }
 
+        /// <summary>
+        /// Creates a new membership in the database.
+        /// </summary>
+        /// <param name="membershipDto">The DTO containing the details for the new membership.</param>
+        /// <returns>The created <see cref="MembershipDto"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown when the specified membership plan is not found.</exception>
         public async Task<MembershipDto> CreateMembership(MembershipCreateDto membershipDto)
         {
 
@@ -79,6 +104,13 @@ namespace Backend.Data.Repository
             return mapper.Map<MembershipDto>(membership);
         }
 
+        /// <summary>
+        /// Updates the details of an existing membership.
+        /// </summary>
+        /// <param name="id">The ID of the membership to update.</param>
+        /// <param name="membershipDto">The DTO containing the updated details for the membership.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided ID is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the membership or plan is not found, or when attempting to renew an active membership.</exception>
         public async Task UpdateMembership(Guid? id, MembershipUpdateDto membershipDto)
         {
             if (id == null)

@@ -177,3 +177,5 @@ C:\Users\centar\Desktop\gymApp\Backend\Backend\bin\Debug\net8.0\Microsoft.Extens
 C:\Users\centar\Desktop\gymApp\Backend\Backend\bin\Debug\net8.0\System.Security.Cryptography.Pkcs.dll
 C:\Users\centar\Desktop\gymApp\Backend\Backend\bin\Debug\net8.0\System.Security.Cryptography.Xml.dll
 C:\Users\centar\Desktop\gymApp\Backend\Backend\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
+C:\Users\centar\Desktop\gymApp\Backend\Backend\bin\Debug\net8.0\Backend.xml
+C:\Users\centar\Desktop\gymApp\Backend\Backend\obj\Debug\net8.0\Backend.xml

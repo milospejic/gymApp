@@ -11,6 +11,10 @@ using System.Security.Claims;
 
 namespace Backend.Controllers
 {
+    /// <summary>
+    /// Controller responsible for managing membership-related operations,
+    /// such as retrieving and updating memberships.
+    /// </summary>
     [Route("api/membership")]
     [ApiController]
     public class MembershipController : ControllerBase
@@ -19,6 +23,12 @@ namespace Backend.Controllers
         private readonly IMemberRepository memberRepository;
         private readonly ILogger<MembershipController> logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MembershipController"/> class.
+        /// </summary>
+        /// <param name="membershipRepository">Service for handling membership-related database operations.</param>
+        /// <param name="memberRepository">Service for handling member-related database operations.</param>
+        /// <param name="logger">Logger for capturing controller activity.</param>
         public MembershipController(IMembershipRepository membershipRepository,IMemberRepository memberRepository,ILogger<MembershipController> logger)
         {
             this.membershipRepository = membershipRepository;
@@ -26,6 +36,16 @@ namespace Backend.Controllers
             this.logger = logger;
         }
 
+        /// <summary>
+        /// Retrieves a list of all memberships in the system.
+        /// Only accessible by authenticated admins.
+        /// </summary>
+        /// <returns>A list of memberships or NoContent if none exist.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -43,6 +63,19 @@ namespace Backend.Controllers
             return Ok(memberships);
         }
 
+        /// <summary>
+        /// Retrieves the membership's details by their ID.
+        /// Only accessible by authenticated admins and members.
+        /// </summary>
+        /// <param name="id">The unique identifier of the membership.</param>
+        /// <returns>The details of the membership with the provided ID.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
+        /// - 403 Forbidden: If a member attempts to access anothers membership data.
+        /// - 404 Not Found: If no membership is found with the provided ID.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Admin,Member")]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -75,6 +108,18 @@ namespace Backend.Controllers
         }
 
 
+        /// <summary>
+        /// Updates the authenticated members's membership information.
+        /// Only accessible by authenticated members.
+        /// </summary>
+        /// <param name="membershipDto">The membership update request containing necessary details.</param>
+        /// <returns>A success response if the update is completed.</returns>
+        /// <remarks>
+        /// Possible errors:
+        /// - 400 Bad Request: If the request data is invalid.
+        /// - 401 Unauthorized: If the member is not authenticated.
+        /// - 500 Internal Server Error: If an unexpected error occurs during processing.
+        /// </remarks>
         [Authorize(Roles = "Member")]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -104,7 +149,10 @@ namespace Backend.Controllers
             return Ok("Successfully updated membership!");
         }
 
-
+        /// <summary>
+        /// Retrieves the authenticated member's ID from claims.
+        /// </summary>
+        /// <returns> MemberID if authenticated, otherwise null.</returns>
         private Guid? GetAuthenticatedUserId()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;

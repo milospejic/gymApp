@@ -3,32 +3,61 @@ using Backend.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-
 namespace Backend.Data.Context
 {
+    /// <summary>
+    /// Represents the database context for the application.
+    /// It provides access to all the entity sets and configures database relationships.
+    /// </summary>
     public class MyDbContext : DbContext
     {
-
         private readonly IConfiguration configuration;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MyDbContext"/> class.
+        /// </summary>
+        /// <param name="options">The options for configuring the database context.</param>
+        /// <param name="configuration">The application configuration containing database connection strings.</param>
         public MyDbContext(DbContextOptions<MyDbContext> options, IConfiguration configuration) : base(options)
         {
             this.configuration = configuration;
         }
 
+        /// <summary>
+        /// Gets or sets the members in the system.
+        /// </summary>
         public DbSet<Member> Members { get; set; }
+
+        /// <summary>
+        /// Gets or sets the admins managing the system.
+        /// </summary>
         public DbSet<Admin> Admins { get; set; }
+
+        /// <summary>
+        /// Gets or sets the memberships associated with members.
+        /// </summary>
         public DbSet<Membership> Memberships { get; set; }
+
+        /// <summary>
+        /// Gets or sets the membership plans available for members.
+        /// </summary>
         public DbSet<MembershipPlan> MembershipPlans { get; set; }
 
+        /// <summary>
+        /// Configures the database connection using the connection string from the configuration.
+        /// </summary>
+        /// <param name="optionsBuilder">The options builder for configuring the database context.</param>
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("GymDBConnection"));
-
         }
+
+        /// <summary>
+        /// Configures the entity relationships, constraints, and seed data for the database.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder for defining entity configurations.</param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
             modelBuilder.Entity<Member>()
                 .HasOne(m => m.Membership)
                 .WithMany()
@@ -64,9 +93,9 @@ namespace Backend.Data.Context
                     AdminPhone = "0649459884",
                     AdminEmail = "petar@example.com",
                     AdminHashedPassword = "$2a$10$CumaLEDEtSsYhcXDZPOnnOxu7.xxZco7ViMg.7m6mFeRkAe4sGzCS"
-
                 }
             );
+
             modelBuilder.Entity<MembershipPlan>().HasData(
                 new MembershipPlan
                 {
@@ -76,7 +105,6 @@ namespace Backend.Data.Context
                     PlanPrice = 30,
                     ForDeletion = false,
                     AdminID = Guid.Parse("c95a5ea7-0956-49d4-8047-68b49ad54fdc")
-
                 },
                 new MembershipPlan
                 {
@@ -86,7 +114,6 @@ namespace Backend.Data.Context
                     PlanPrice = 45,
                     ForDeletion = false,
                     AdminID = Guid.Parse("c95a5ea7-0956-49d4-8047-68b49ad54fdc")
-
                 }
             );
 
@@ -110,9 +137,7 @@ namespace Backend.Data.Context
                     MembershipFee = 30,
                     IsFeePaid = false,
                     MembershipPlanID = Guid.Parse("b1780029-6d8d-45cc-ab53-e3d20433007b")
-
                 }
-
             );
 
             modelBuilder.Entity<Member>().HasData(
@@ -125,7 +150,6 @@ namespace Backend.Data.Context
                     MemberEmail = "jovan@example.com",
                     MemberHashedPassword = "$2a$10$rOVEpsrnqQYlzpRizY/.XOGfB7ztiqocgS6F3sxQeumTxRWQHWRja",
                     MembershipID = Guid.Parse("48923344-0974-45f1-8d72-25030d19437e")
-
                 },
                 new Member
                 {
@@ -136,10 +160,8 @@ namespace Backend.Data.Context
                     MemberEmail = "masa@example.com",
                     MemberHashedPassword = "$2a$10$auEZi85mbEUQ.UwxAg3aN.CBE.of6yvuMrFNsYtYJE9WBZFFmteHa",
                     MembershipID = Guid.Parse("ac6e2085-57ec-4c1e-a34c-42408b9daebe")
-
                 }
             );
-
         }
     }
 }
