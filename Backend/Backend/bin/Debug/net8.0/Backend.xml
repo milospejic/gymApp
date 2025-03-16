@@ -440,7 +440,6 @@
             </summary>
             <returns>A list of membershipPlans or NoContent if none exist.</returns>
             <remarks>
-            <response code="200">List of membershipPlans</response>
             Possible errors:
             - 401 Unauthorized: If the user is not authenticated or lacks appropriate role.
             - 500 Internal Server Error: If an unexpected error occurs during processing.

@@ -37,7 +37,6 @@ namespace Backend.Controllers
             this.logger = logger;
         }
 
-
         /// <summary>
         /// Retrieves a list of all membershipPlans in the system.
         /// Accesssible by all.

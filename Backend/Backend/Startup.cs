@@ -56,9 +56,9 @@ namespace Backend
             // Configures Cross-Origin Resource Sharing (CORS) policy to allow all origins, headers, and methods
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowAllOrigins", builder =>
+                options.AddPolicy("AllowFrontend", builder =>
                 {
-                    builder.AllowAnyOrigin()
+                    builder.WithOrigins("http://localhost:5173") // Vite default port
                            .AllowAnyHeader()
                            .AllowAnyMethod();
                 });
@@ -186,7 +186,7 @@ namespace Backend
             app.UseRouting(); // Set up routing middleware
 
             // Enable CORS policy
-            app.UseCors("AllowAllOrigins");
+            app.UseCors("AllowFrontend");
 
             // Enable authentication middleware to process JWT Bearer tokens
             app.UseAuthentication();
