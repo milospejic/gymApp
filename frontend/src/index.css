@@ -1,68 +1,129 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* ========================
+   Global Styles (main.css)
+   ======================== */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
+/* 🔷 Base Styles */
 body {
+  font-family: monospace;
+  background-color: #000000;
+  color: #333;
   margin: 0;
+  padding: 0;
+
+}
+
+/* 🔷 Fix Bootstrap Container */
+.container {
+  max-width: 1200px;
+  padding: 20px;
+}
+
+/* 🔷 Navbar Styling */
+.navbar {
+  background-color: #10291a !important; /* Deep Blue */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 15px 0;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  font-size: 24px;
+  color: #ffffff !important;
+  font-family: monospace
+}
+
+.navbar .nav-link {
+  color: #e2e8f0 !important;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  font-family: monospace;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+  color: #193947 !important;
+  transform: scale(1.05);
+}
+
+/* 🔷 Hero Section */
+.hero-section {
+  text-align: center;
+  padding: 60px 0;
+  background: linear-gradient(135deg, #1e40af 0%, #9333ea 100%);
+  color: white;
+  border-radius: 10px;
+  margin-bottom: 30px;
+}
+
+.hero-section h1 {
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.hero-section p {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+/* 🔷 Cards */
+.card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  background: #fff;
+  border: none;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card h3 {
+  font-size: 22px;
+  color: #1e3a8a;
+}
+
+.card .btn {
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-weight: bold;
+}
+
+.card .btn:hover {
+  background-color: #1e3a8a;
+  transform: scale(1.05);
+}
+
+/* 🔷 Membership Plans Grid */
+.membership-plans {
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* 🔷 Footer */
+.footer {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 20px;
+  text-align: center;
+  margin-top: 50px;
+  font-size: 16px;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* 🔷 Responsive Fixes */
+@media (max-width: 768px) {
+  .navbar .nav-link {
+    font-size: 16px;
   }
-  a:hover {
-    color: #747bff;
+
+  .hero-section h1 {
+    font-size: 30px;
   }
-  button {
-    background-color: #f9f9f9;
+
+  .hero-section p {
+    font-size: 16px;
   }
 }
