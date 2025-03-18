@@ -63,7 +63,7 @@ namespace Backend.Controllers
             {
                 var token = authService.GenerateToken(admin.AdminEmail, "Admin", admin.AdminId);
                 logger.LogInformation("Admin login successful for email: {Email}", admin.AdminEmail);
-                return Ok(new { Token = token });
+                return Ok(new { Token = token, Role = "Admin" });
             }
 
             var member = await authService.IsMember(loginDto);
@@ -71,7 +71,7 @@ namespace Backend.Controllers
             {
                 var token = authService.GenerateToken(member.MemberEmail, "Member", member.MemberId);
                 logger.LogInformation("Member login successful for email: {Email}", member.MemberEmail);
-                return Ok(new { Token = token });
+                return Ok(new { Token = token, Role = "Member" });
             }
 
              throw new UnauthorizedAccessException("Invalid credentials");

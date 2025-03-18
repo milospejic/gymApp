@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMembershipPlans, MembershipPlan } from "../services/membershipPlanService";
+import { membershipPlanService, MembershipPlan } from "../services/membershipPlanService";
 import PlanCard from "../components/PlanCard";
 
 const Home = () => {
@@ -10,7 +10,7 @@ const Home = () => {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const data = await getMembershipPlans();
+        const data = await membershipPlanService.getMembershipPlans();
         setPlans(data);
       } catch {
         setError("Failed to load membership plans. Please try again later.");
@@ -23,7 +23,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-5 vh-100">
       <h1 className="text-center text-light">🏋️ Welcome to My Gym! 🏋️</h1>
       <p className="text-center text-light">
         Transform your body, push your limits, and achieve your fitness goals. No pain, no gain! 💪🔥

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import PlanCard from "../components/PlanCard";
-import { getMembershipPlans, MembershipPlan } from "../services/membershipPlanService";
+import { membershipPlanService, MembershipPlan } from "../services/membershipPlanService";
 
 const Plans = () => {
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
@@ -10,7 +10,7 @@ const Plans = () => {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const data = await getMembershipPlans();
+        const data = await membershipPlanService.getMembershipPlans();
         setPlans(data);
       } catch (error) {
         console.error("Error fetching plans:", error);
@@ -24,7 +24,7 @@ const Plans = () => {
   }, []);
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-5 vh-100">
       <h1 className="text-center text-light"> Membership Plans </h1>
 
       {/* Show loading spinner */}
