@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\centar\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj": {}
+    "C:\\Users\\mpejic\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj": {}
   },
   "projects": {
-    "C:\\Users\\centar\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj": {
+    "C:\\Users\\mpejic\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\centar\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj",
+        "projectUniqueName": "C:\\Users\\mpejic\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj",
         "projectName": "Backend",
-        "projectPath": "C:\\Users\\centar\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj",
-        "packagesPath": "C:\\Users\\centar\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\centar\\Desktop\\gymApp\\Backend\\Backend\\obj\\",
+        "projectPath": "C:\\Users\\mpejic\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj",
+        "packagesPath": "C:\\Users\\mpejic\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\mpejic\\Desktop\\gymApp\\Backend\\Backend\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\centar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\mpejic\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -39,7 +43,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -99,7 +104,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

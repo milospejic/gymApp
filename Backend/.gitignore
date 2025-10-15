@@ -1,0 +1,42 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+out/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# ASP.NET Core
+wwwroot/lib/
+appsettings.*.json
+appsettings.Local.json
+
+# Rider
+.idea/
+
+# Logs
+*.log
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Node.js (if using frontend)
+node_modules/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Secrets
+.env
