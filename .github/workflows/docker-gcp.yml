@@ -1,0 +1,38 @@
+name: Build and Push to Artifact Registry
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER_ID }}'
+          service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Docker configuration'
+        run: gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT_REGISTRY }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.GCP_ARTIFACT_REGISTRY }}/gym-app-backend:${{ github.sha }} -f gymApp/Backend/Dockerfile .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.GCP_ARTIFACT_REGISTRY }}/gym-app-backend:${{ github.sha }}
