@@ -28,7 +28,7 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: 'Docker configuration'
-        run: gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT_REGISTRY }}
+        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
 
       - name: Build Docker image
         run: |
