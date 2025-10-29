@@ -34,6 +34,14 @@ jobs:
         run: |
           docker build -t ${{ secrets.GCP_ARTIFACT_REGISTRY }}/gym-app-backend:${{ github.sha }} -f Backend/Dockerfile Backend
 
-      - name: Push Docker image
+      - name: Push Docker image with SHA tag
         run: |
           docker push ${{ secrets.GCP_ARTIFACT_REGISTRY }}/gym-app-backend:${{ github.sha }}
+
+      - name: Tag image as 'latest'
+        run: |
+          docker tag ${{ secrets.GCP_ARTIFACT_REGISTRY }}/gym-app-backend:${{ github.sha }} ${{ secrets.GCP_ARTIFACT_REGISTRY }}/gym-app-backend:latest
+      
+      - name: Push Docker image with 'latest' tag
+        run: |
+          docker push ${{ secrets.GCP_ARTIFACT_REGISTRY }}/gym-app-backend:latest
