@@ -113,8 +113,15 @@ namespace Backend
             // Configures the DbContext for SQL Server
             services.AddDbContext<MyDbContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("GymDBConnection"))
-                    .LogTo(Console.WriteLine, LogLevel.Information); // Logs SQL queries for debugging purposes
+                options.UseSqlServer(Configuration.GetConnectionString("GymDBConnection"),
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(30),
+                            errorNumbersToAdd: null);
+                    })
+                .LogTo(Console.WriteLine, LogLevel.Information); // Logs SQL queries for debugging
             });
 
             // JWT Authentication configuration

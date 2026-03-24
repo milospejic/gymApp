@@ -11,16 +11,14 @@ namespace Backend.Data.Context
     /// </summary>
     public class MyDbContext : DbContext
     {
-        private readonly IConfiguration configuration;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MyDbContext"/> class.
         /// </summary>
         /// <param name="options">The options for configuring the database context.</param>
         /// <param name="configuration">The application configuration containing database connection strings.</param>
-        public MyDbContext(DbContextOptions<MyDbContext> options, IConfiguration configuration) : base(options)
+        public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
         {
-            this.configuration = configuration;
         }
 
         /// <summary>
@@ -47,10 +45,7 @@ namespace Backend.Data.Context
         /// Configures the database connection using the connection string from the configuration.
         /// </summary>
         /// <param name="optionsBuilder">The options builder for configuring the database context.</param>
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("GymDBConnection"));
-        }
+       
 
         /// <summary>
         /// Configures the entity relationships, constraints, and seed data for the database.
