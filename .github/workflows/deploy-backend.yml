@@ -9,10 +9,7 @@ on:
       - 'Backend/**' 
 
 env:
-  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   GCP_REGION: europe-west1
-  WIF_PROVIDER: projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/gym-app-pool/providers/gym-app-provider
-  WIF_SERVICE_ACCOUNT: gym-app-sa@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
 jobs:
   set-environment:
@@ -45,8 +42,8 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+          workload_identity_provider: 'projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ secrets.WIF_POOL_ID }}/providers/${{ secrets.WIF_PROVIDER_ID }}'
+          service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -56,7 +53,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          IMAGE_TAG=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/gym-app-images-${{ needs.set-environment.outputs.env_name }}/gym-backend:${{ github.sha }}
+          IMAGE_TAG=${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gym-app-images-${{ needs.set-environment.outputs.env_name }}/gym-backend:${{ github.sha }}
           
           docker build -t $IMAGE_TAG -f Backend/Dockerfile .
           docker push $IMAGE_TAG
@@ -68,4 +65,4 @@ jobs:
           gcloud run deploy gym-backend-service-${{ needs.set-environment.outputs.env_name }} \
             --image ${{ env.IMAGE_TAG }} \
             --region ${{ env.GCP_REGION }} \
-            --project ${{ env.GCP_PROJECT_ID }}
+            --project ${{ secrets.GCP_PROJECT_ID }}
