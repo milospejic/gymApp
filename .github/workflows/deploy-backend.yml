@@ -55,7 +55,7 @@ jobs:
         run: |
           IMAGE_TAG=${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gym-app-images-${{ needs.set-environment.outputs.env_name }}/gym-backend:${{ github.sha }}
           
-          docker build -t $IMAGE_TAG -f Backend/Dockerfile .
+          docker build -t $IMAGE_TAG -f Backend/Dockerfile Backend/
           docker push $IMAGE_TAG
           
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
