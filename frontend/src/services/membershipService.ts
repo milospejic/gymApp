@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://localhost:7151/api/membership'; // Update with your backend URL
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/auth`;; // Update with your backend URL
 
 export interface Membership {
     membershipId: string;

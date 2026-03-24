@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "l/F8qP+xQTg=",
+  "dgSpecHash": "PlC51dMVHto=",
   "success": true,
   "projectFilePath": "C:\\Users\\mpejic\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj",
   "expectedPackageFiles": [
@@ -117,6 +117,18 @@
     "C:\\Users\\mpejic\\.nuget\\packages\\system.windows.extensions\\6.0.0\\system.windows.extensions.6.0.0.nupkg.sha512"
   ],
   "logs": [
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "message": "Package 'AutoMapper' 14.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x",
+      "projectPath": "C:\\Users\\mpejic\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\mpejic\\Desktop\\gymApp\\Backend\\Backend\\Backend.csproj",
+      "libraryId": "AutoMapper",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
     {
       "code": "NU1903",
       "level": "Warning",

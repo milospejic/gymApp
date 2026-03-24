@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Admin } from "./adminService";
 
-const API_BASE_URL = "https://localhost:7151/api/membershipPlan";
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/auth`;;
 
 export interface MembershipPlan {
   planID: string;

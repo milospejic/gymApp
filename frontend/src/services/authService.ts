@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://localhost:7151/api/auth";
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/auth`;
 
 interface LoginDto {
   email: string;
