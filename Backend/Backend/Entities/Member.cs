@@ -66,5 +66,8 @@ namespace Backend.Entities
         /// </summary>
         [ForeignKey("MembershipID")]
         public virtual Membership Membership { get; set; }
+
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
     }
 }

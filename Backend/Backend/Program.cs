@@ -24,25 +24,30 @@ namespace Backend
         {
             var host = CreateHostBuilder(args).Build();
 
-            // Apply migrations
-            using (var scope = host.Services.CreateScope())
+            // Check if we are in the Development environment
+            var env = host.Services.GetRequiredService<IWebHostEnvironment>();
+            
+            if (env.IsDevelopment())
             {
-                var services = scope.ServiceProvider;
-                try
+                // Apply migrations only in Development
+                using (var scope = host.Services.CreateScope())
                 {
-                    var context = services.GetRequiredService<MyDbContext>();
-                    context.Database.Migrate();
-                }
-                catch (Exception ex)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred while migrating the database.");
+                    var services = scope.ServiceProvider;
+                    try
+                    {
+                        var context = services.GetRequiredService<MyDbContext>();
+                        context.Database.Migrate(); 
+                    }
+                    catch (Exception ex)
+                    {
+                        var logger = services.GetRequiredService<ILogger<Program>>();
+                        logger.LogError(ex, "An error occurred while migrating the database.");
+                    }
                 }
             }
 
             host.Run();
         }
-
 
         /// <summary>
         /// Creates a host builder that configures the web host for the application.

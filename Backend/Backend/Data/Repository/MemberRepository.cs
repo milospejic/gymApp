@@ -33,13 +33,19 @@ namespace Backend.Data.Repository
         /// Retrieves all members from the database.
         /// </summary>
         /// <returns>A collection of <see cref="MemberDto"/> representing all members.</returns>
-        public async Task<IEnumerable<MemberDto>> GetAllMembers()
+        public async Task<IEnumerable<MemberDto>> GetAllMembers(int pageNumber = 1, int pageSize = 50)
         {
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            pageSize = pageSize > 100 ? 100 : pageSize; 
+
             var members = await context.Members
                 .Include(m => m.Membership)
                     .ThenInclude(ms => ms.MembershipPlan)
                     .ThenInclude(ma => ma.Admin)
-                    .ToListAsync();
+                .Skip((pageNumber - 1) * pageSize) 
+                .Take(pageSize)                   
+                .ToListAsync();
+
             return mapper.Map<IEnumerable<MemberDto>>(members);
         }
 
@@ -112,20 +118,14 @@ namespace Backend.Data.Repository
         public async Task<MemberDto> CreateMember(MemberCreateDto memberDto, Guid membershipId)
         {
             var member = mapper.Map<Member>(memberDto);
-            member.MemberId= Guid.NewGuid();
+            member.MemberId = Guid.NewGuid();
             member.MembershipID = membershipId;
             member.MemberHashedPassword = PasswordHasher.HashPassword(memberDto.MemberHashedPassword);
-            var membership = await context.Memberships.FindAsync(membershipId);
-            if (membership != null)
-            {
-                member.Membership = membership;
-                var admin = await context.Admins.FindAsync(member.Membership.MembershipPlan.AdminID);
-                if(admin != null)
-                member.Membership.MembershipPlan.Admin = admin;
-            }
+
             context.Members.Add(member);
             await context.SaveChangesAsync();
-            return mapper.Map<MemberDto>(member);
+
+            return await GetMemberById(member.MemberId);
         }
 
         /// <summary>

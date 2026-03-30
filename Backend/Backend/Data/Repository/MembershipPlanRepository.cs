@@ -32,10 +32,15 @@ namespace Backend.Data.Repository
         /// Retrieves all membership plans from the database.
         /// </summary>
         /// <returns>A collection of <see cref="MembershipPlanDto"/> representing all membership plans.</returns>
-        public async Task<IEnumerable<MembershipPlanDto>> GetAllMembershipPlans()
+        public async Task<IEnumerable<MembershipPlanDto>> GetAllMembershipPlans(int pageNumber = 1, int pageSize = 50)
         {
+
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            pageSize = pageSize > 100 ? 100 : pageSize;
             var membershipPlans = await context.MembershipPlans
                  .Include(m => m.Admin)
+                 .Skip((pageNumber - 1) * pageSize)
+                 .Take(pageSize)
                  .ToListAsync();
             return mapper.Map<IEnumerable<MembershipPlanDto>>(membershipPlans);
         }

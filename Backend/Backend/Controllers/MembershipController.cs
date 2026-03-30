@@ -52,10 +52,10 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<MembershipDto>>> GetAllMemberships()
+        public async Task<ActionResult<IEnumerable<MembershipDto>>> GetAllMemberships([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             logger.LogInformation("Fetching all memberships.");
-            var memberships = await membershipRepository.GetAllMemberships();
+            var memberships = await membershipRepository.GetAllMemberships(pageNumber, pageSize);
             if (memberships == null || !memberships.Any())
             {
                 return NoContent();
@@ -120,35 +120,36 @@ namespace Backend.Controllers
         /// - 401 Unauthorized: If the member is not authenticated.
         /// - 500 Internal Server Error: If an unexpected error occurs during processing.
         /// </remarks>
-        [Authorize(Roles = "Member")]
-        [HttpPut]
+        [Authorize(Roles = "Admin,Member")]
+        [HttpPut("{membershipId?}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateMembership([FromBody] MembershipUpdateDto membershipDto)
+        public async Task<IActionResult> UpdateMembership(Guid? membershipId, [FromBody] MembershipUpdateDto membershipDto)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
+            if (!ModelState.IsValid) throw new BadRequestException("Validation failed");
 
-                throw new BadRequestException($"Validation failed for MembershipUpdateDto: {string.Join(" | ", errors)}");
+            var authenticatedId = GetAuthenticatedUserId();
+            if (authenticatedId == null) throw new UnauthorizedAccessException("Unauthorized update attempt.");
 
-            }
-            var authenticatedMemberId = GetAuthenticatedUserId();
-            if (authenticatedMemberId == null)
+            Guid targetMembershipId;
+
+            if (User.IsInRole("Admin"))
             {
-                throw new UnauthorizedAccessException("Unauthorized update attempt.");
+                if (membershipId == null) return BadRequest("Admins must provide a membership ID in the URL.");
+                targetMembershipId = membershipId.Value;
             }
-            var member = await memberRepository.GetMemberById(authenticatedMemberId);
-            logger.LogInformation("Updating membership  with ID: {MembershipId}", member.MembershipId);
-            await membershipRepository.UpdateMembership(member.MembershipId, membershipDto);
+            else
+            {
+                var member = await memberRepository.GetMemberById(authenticatedId);
+                targetMembershipId = member.MembershipId;
+            }
+
+            logger.LogInformation("Updating membership with ID: {MembershipId}", targetMembershipId);
+            await membershipRepository.UpdateMembership(targetMembershipId, membershipDto);
             return Ok("Successfully updated membership!");
         }
-
         /// <summary>
         /// Retrieves the authenticated member's ID from claims.
         /// </summary>

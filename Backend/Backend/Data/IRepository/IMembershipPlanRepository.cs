@@ -14,8 +14,10 @@ namespace Backend.Data.IRepository
         /// <summary>
         /// Retrieves all available membership plans.
         /// </summary>
-        /// <returns>A collection of <see cref="MembershipPlanDto"/> representing all membership plans.</returns>
-        Task<IEnumerable<MembershipPlanDto>> GetAllMembershipPlans();
+        /// <param name="pageNumber">The page number to retrieve (starts at 1).</param>
+        /// <param name="pageSize">The maximum number of records per page.</param>
+        /// <returns>A collection of <see cref="MembershipPlanDto"/> representing the membership plans.</returns>
+        Task<IEnumerable<MembershipPlanDto>> GetAllMembershipPlans(int pageNumber = 1, int pageSize = 50);
 
         /// <summary>
         /// Retrieves a membership plan by its unique identifier.

@@ -59,11 +59,11 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<MemberDto>>> GetAllMembers()
+        public async Task<ActionResult<IEnumerable<MemberDto>>> GetAllMembers([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             logger.LogInformation("Fetching all members.");
 
-            var members = await memberRepository.GetAllMembers();
+            var members = await memberRepository.GetAllMembers(pageNumber, pageSize);
             if (members == null || !members.Any())
             {
                 return NoContent();
@@ -243,7 +243,7 @@ namespace Backend.Controllers
                 throw new BadRequestException($"Validation failed for MemberCreateDto: {string.Join(" | ", errors)}");
 
             }
-            if(await memberRepository.GetMemberByEmail(memberDto.MemberEmail) != null && await adminRepository.GetAdminByEmail(memberDto.MemberEmail) != null)
+            if (await memberRepository.GetMemberByEmail(memberDto.MemberEmail) != null && await adminRepository.GetAdminByEmail(memberDto.MemberEmail) != null)
             {
                 throw new EmailAlreadyInUseException($"Email ({memberDto.MemberEmail}) is already taken");
             }
@@ -272,30 +272,32 @@ namespace Backend.Controllers
         /// - 401 Unauthorized: If the member is not authenticated.
         /// - 500 Internal Server Error: If an unexpected error occurs during processing.
         /// </remarks>
-        [Authorize(Roles = "Member")]
-        [HttpPut]
+        [Authorize(Roles = "Admin,Member")]
+        [HttpPut("{id?}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateMember([FromBody] MemberUpdateDto memberDto)
+        public async Task<IActionResult> UpdateMember(Guid? id, [FromBody] MemberUpdateDto memberDto)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-                throw new BadRequestException($"Validation failed for MemberuUpdateDto: {string.Join(" | ", errors)}");
-            }
+            if (!ModelState.IsValid) throw new BadRequestException("Validation failed");
+
             var authenticatedUserId = GetAuthenticatedUserId();
-            if (authenticatedUserId == null)
+            if (authenticatedUserId == null) throw new UnauthorizedAccessException("Unauthorized attempt.");
+
+            Guid targetId;
+            if (User.IsInRole("Admin"))
             {
-                throw new UnauthorizedAccessException("Unauthorized update attempt.");
+                if (id == null) return BadRequest("Admins must provide a member ID in the URL.");
+                targetId = id.Value;
+            }
+            else
+            {
+                targetId = authenticatedUserId.Value; 
             }
 
-            logger.LogInformation("Updating member with ID: {MemberId}", authenticatedUserId);
-            await memberRepository.UpdateMember(authenticatedUserId, memberDto);
+            logger.LogInformation("Updating member with ID: {MemberId}", targetId);
+            await memberRepository.UpdateMember(targetId, memberDto);
             return Ok("Successfully updated member!");
         }
 
@@ -310,21 +312,29 @@ namespace Backend.Controllers
         /// - 401 Unauthorized: If the member is not authenticated.
         /// - 500 Internal Server Error: If an unexpected error occurs during processing.
         /// </remarks>
-        [Authorize(Roles = "Member")]
-        [HttpDelete] 
+        [Authorize(Roles = "Admin,Member")]
+        [HttpDelete("{id?}")] 
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteMember()
+        public async Task<IActionResult> DeleteMember(Guid? id)
         {
             var authenticatedUserId = GetAuthenticatedUserId();
-            if (authenticatedUserId == null)
+            if (authenticatedUserId == null) throw new UnauthorizedAccessException("Unauthorized attempt.");
+
+            Guid targetId;
+            if (User.IsInRole("Admin"))
             {
-                throw new UnauthorizedAccessException("Unauthorized delete attempt.");
+                if (id == null) return BadRequest("Admins must provide a member ID in the URL.");
+                targetId = id.Value;
             }
-            logger.LogInformation("Deleting member with ID: {MemberId}", authenticatedUserId);
-            await memberRepository.DeleteMember(authenticatedUserId);
-            logger.LogInformation("Member with ID: {MemberId} deleted successfully", authenticatedUserId);
+            else
+            {
+                targetId = authenticatedUserId.Value;
+            }
+
+            logger.LogInformation("Deleting member with ID: {MemberId}", targetId);
+            await memberRepository.DeleteMember(targetId);
             return NoContent();
         }
 

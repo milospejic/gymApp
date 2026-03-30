@@ -82,7 +82,7 @@
             <param name="memberRepository">Service for handling member-related database operations.</param>
             <param name="logger">Logger for capturing controller activity.</param>
         </member>
-        <member name="M:Backend.Controllers.AdminController.GetAllAdmins">
+        <member name="M:Backend.Controllers.AdminController.GetAllAdmins(System.Int32,System.Int32)">
             <summary>
             Retrieves a list of all administrators in the system.
             </summary>
@@ -195,7 +195,7 @@
             such as logging in a user (both admin and member).
             </summary>
         </member>
-        <member name="M:Backend.Controllers.AuthController.#ctor(Backend.AuthHelp.IAuthService,Microsoft.Extensions.Logging.ILogger{Backend.Controllers.AuthController})">
+        <member name="M:Backend.Controllers.AuthController.#ctor(Backend.AuthHelp.IAuthService,Microsoft.Extensions.Logging.ILogger{Backend.Controllers.AuthController},Backend.Data.Context.MyDbContext)">
             <summary>
             Initializes a new instance of the <see cref="T:Backend.Controllers.AuthController"/> class.
             </summary>
@@ -230,7 +230,7 @@
             <param name="adminRepository">Service for handling admin-related database operations.</param>
             <param name="logger">Logger for capturing controller activity.</param>
         </member>
-        <member name="M:Backend.Controllers.MemberController.GetAllMembers">
+        <member name="M:Backend.Controllers.MemberController.GetAllMembers(System.Int32,System.Int32)">
             <summary>
             Retrieves a list of all members in the system.
             Only accessible by authenticated admins.
@@ -312,7 +312,7 @@
             - 500 Internal Server Error: If an unexpected error occurs during processing.
             </remarks>
         </member>
-        <member name="M:Backend.Controllers.MemberController.UpdateMember(Backend.Dto.UpdateDtos.MemberUpdateDto)">
+        <member name="M:Backend.Controllers.MemberController.UpdateMember(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.MemberUpdateDto)">
             <summary>
             Updates the authenticated member's profile information.
             Only accessible by authenticated members.
@@ -326,7 +326,7 @@
             - 500 Internal Server Error: If an unexpected error occurs during processing.
             </remarks>
         </member>
-        <member name="M:Backend.Controllers.MemberController.DeleteMember">
+        <member name="M:Backend.Controllers.MemberController.DeleteMember(System.Nullable{System.Guid})">
             <summary>
             Deletes the currently authenticated member account.
             Only accessible by authenticated members.
@@ -373,7 +373,7 @@
             <param name="memberRepository">Service for handling member-related database operations.</param>
             <param name="logger">Logger for capturing controller activity.</param>
         </member>
-        <member name="M:Backend.Controllers.MembershipController.GetAllMemberships">
+        <member name="M:Backend.Controllers.MembershipController.GetAllMemberships(System.Int32,System.Int32)">
             <summary>
             Retrieves a list of all memberships in the system.
             Only accessible by authenticated admins.
@@ -400,7 +400,7 @@
             - 500 Internal Server Error: If an unexpected error occurs during processing.
             </remarks>
         </member>
-        <member name="M:Backend.Controllers.MembershipController.UpdateMembership(Backend.Dto.UpdateDtos.MembershipUpdateDto)">
+        <member name="M:Backend.Controllers.MembershipController.UpdateMembership(System.Nullable{System.Guid},Backend.Dto.UpdateDtos.MembershipUpdateDto)">
             <summary>
             Updates the authenticated members's membership information.
             Only accessible by authenticated members.
@@ -433,7 +433,7 @@
             <param name="membershipPlanRepository">Service for handling membershipPlan-related database operations.</param>
             <param name="logger">Logger for capturing controller activity.</param>
         </member>
-        <member name="M:Backend.Controllers.MembershipPlanController.GetAllMembershipPlans">
+        <member name="M:Backend.Controllers.MembershipPlanController.GetAllMembershipPlans(System.Int32,System.Int32)">
             <summary>
             Retrieves a list of all membershipPlans in the system.
             Accesssible by all.
@@ -540,7 +540,7 @@
             It provides access to all the entity sets and configures database relationships.
             </summary>
         </member>
-        <member name="M:Backend.Data.Context.MyDbContext.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{Backend.Data.Context.MyDbContext},Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:Backend.Data.Context.MyDbContext.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{Backend.Data.Context.MyDbContext})">
             <summary>
             Initializes a new instance of the <see cref="T:Backend.Data.Context.MyDbContext"/> class.
             </summary>
@@ -567,13 +567,11 @@
             Gets or sets the membership plans available for members.
             </summary>
         </member>
-        <member name="M:Backend.Data.Context.MyDbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)">
+        <member name="M:Backend.Data.Context.MyDbContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <summary>
             Configures the database connection using the connection string from the configuration.
             </summary>
             <param name="optionsBuilder">The options builder for configuring the database context.</param>
-        </member>
-        <member name="M:Backend.Data.Context.MyDbContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <summary>
             Configures the entity relationships, constraints, and seed data for the database.
             </summary>
@@ -586,11 +584,13 @@
             and handling admin password changes.
             </summary>
         </member>
-        <member name="M:Backend.Data.IRepository.IAdminRepository.GetAllAdmins">
+        <member name="M:Backend.Data.IRepository.IAdminRepository.GetAllAdmins(System.Int32,System.Int32)">
             <summary>
             Retrieves all administrators.
             </summary>
-            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.AdminDto"/> representing all administrators.</returns>
+            <param name="pageNumber">The page number to retrieve (starts at 1).</param>
+            <param name="pageSize">The maximum number of records per page.</param>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.AdminDto"/> representing the admins.</returns>
         </member>
         <member name="M:Backend.Data.IRepository.IAdminRepository.GetAdminById(System.Nullable{System.Guid})">
             <summary>
@@ -640,11 +640,13 @@
             and handling member password changes.
             </summary>
         </member>
-        <member name="M:Backend.Data.IRepository.IMemberRepository.GetAllMembers">
+        <member name="M:Backend.Data.IRepository.IMemberRepository.GetAllMembers(System.Int32,System.Int32)">
             <summary>
-            Retrieves all members.
+            Retrieves a paginated list of members.
             </summary>
-            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> representing all members.</returns>
+            <param name="pageNumber">The page number to retrieve (starts at 1).</param>
+            <param name="pageSize">The maximum number of records per page.</param>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MemberDto"/> representing the members.</returns>
         </member>
         <member name="M:Backend.Data.IRepository.IMemberRepository.GetMemberById(System.Nullable{System.Guid})">
             <summary>
@@ -702,11 +704,13 @@
             and setting a plan for deletion.
             </summary>
         </member>
-        <member name="M:Backend.Data.IRepository.IMembershipPlanRepository.GetAllMembershipPlans">
+        <member name="M:Backend.Data.IRepository.IMembershipPlanRepository.GetAllMembershipPlans(System.Int32,System.Int32)">
             <summary>
             Retrieves all available membership plans.
             </summary>
-            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MembershipPlanDto"/> representing all membership plans.</returns>
+            <param name="pageNumber">The page number to retrieve (starts at 1).</param>
+            <param name="pageSize">The maximum number of records per page.</param>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MembershipPlanDto"/> representing the membership plans.</returns>
         </member>
         <member name="M:Backend.Data.IRepository.IMembershipPlanRepository.GetMembershipPlanById(System.Guid)">
             <summary>
@@ -749,11 +753,13 @@
             These operations include retrieving, creating, and updating membership records.
             </summary>
         </member>
-        <member name="M:Backend.Data.IRepository.IMembershipRepository.GetAllMemberships">
+        <member name="M:Backend.Data.IRepository.IMembershipRepository.GetAllMemberships(System.Int32,System.Int32)">
             <summary>
-            Retrieves all memberships.
+            Retrieves a paginated list of memberships.
             </summary>
-            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MembershipDto"/> representing all memberships.</returns>
+            <param name="pageNumber">The page number to retrieve (starts at 1).</param>
+            <param name="pageSize">The maximum number of records per page.</param>
+            <returns>A collection of <see cref="T:Backend.Dto.BasicDtos.MembershipDto"/> representing the memberships.</returns>
         </member>
         <member name="M:Backend.Data.IRepository.IMembershipRepository.GetMembershipById(System.Guid)">
             <summary>
@@ -788,7 +794,7 @@
             <param name="context">The database context used for querying and saving admin data.</param>
             <param name="mapper">The AutoMapper instance used for mapping entities to DTOs.</param>
         </member>
-        <member name="M:Backend.Data.Repository.AdminRepository.GetAllAdmins">
+        <member name="M:Backend.Data.Repository.AdminRepository.GetAllAdmins(System.Int32,System.Int32)">
             <summary>
             Retrieves all admins from the database.
             </summary>
@@ -855,7 +861,7 @@
             <param name="context">The database context used for querying and saving member data.</param>
             <param name="mapper">The AutoMapper instance used for mapping entities to DTOs.</param>
         </member>
-        <member name="M:Backend.Data.Repository.MemberRepository.GetAllMembers">
+        <member name="M:Backend.Data.Repository.MemberRepository.GetAllMembers(System.Int32,System.Int32)">
             <summary>
             Retrieves all members from the database.
             </summary>
@@ -932,7 +938,7 @@
             <param name="context">The database context used for querying and saving membership plan data.</param>
             <param name="mapper">The AutoMapper instance used for mapping entities to DTOs.</param>
         </member>
-        <member name="M:Backend.Data.Repository.MembershipPlanRepository.GetAllMembershipPlans">
+        <member name="M:Backend.Data.Repository.MembershipPlanRepository.GetAllMembershipPlans(System.Int32,System.Int32)">
             <summary>
             Retrieves all membership plans from the database.
             </summary>
@@ -989,7 +995,7 @@
             <param name="context">The database context used for querying and saving membership data.</param>
             <param name="mapper">The AutoMapper instance used for mapping entities to DTOs.</param>
         </member>
-        <member name="M:Backend.Data.Repository.MembershipRepository.GetAllMemberships">
+        <member name="M:Backend.Data.Repository.MembershipRepository.GetAllMemberships(System.Int32,System.Int32)">
             <summary>
             Retrieves all memberships from the database.
             </summary>
@@ -1630,6 +1636,18 @@
         <member name="M:Backend.Migrations.ChangedOnDeleteToCascade2.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:Backend.Migrations.AddRefreshTokens">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.AddRefreshTokens.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.AddRefreshTokens.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.AddRefreshTokens.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:Backend.Profiles.AdminProfile">
             <summary>
             AutoMapper profile for mapping between <see cref="T:Backend.Entities.Admin"/> entity and corresponding DTOs.
@@ -1804,12 +1822,12 @@
         </member>
         <member name="T:Backend.Utils.PasswordHasher">
             <summary>
-            Provides methods for hashing and verifying passwords using the BCrypt hashing algorithm.
+            Provides methods for hashing and verifying passwords using BouncyCastle's BCrypt algorithm.
             </summary>
         </member>
         <member name="M:Backend.Utils.PasswordHasher.HashPassword(System.String)">
             <summary>
-            Hashes the provided password using the BCrypt hashing algorithm.
+            Hashes the provided password using the OpenBsdBCrypt hashing algorithm.
             </summary>
             <param name="password">The password to be hashed.</param>
             <returns>A hashed representation of the password.</returns>
@@ -1822,7 +1840,7 @@
             <param name="password">The plain-text password to verify.</param>
             <param name="hashedPassword">The hashed password to compare against.</param>
             <returns><c>true</c> if the password matches the hashed password; otherwise, <c>false</c>.</returns>
-            <exception cref="T:System.ArgumentNullException">Thrown if either the password or hashed password is null or empty.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if either the password or hashed password is null or empty.</exception>
         </member>
     </members>
 </doc>

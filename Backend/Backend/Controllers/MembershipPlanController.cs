@@ -53,11 +53,11 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<MembershipPlanDto>>> GetAllMembershipPlans()
+        public async Task<ActionResult<IEnumerable<MembershipPlanDto>>> GetAllMembershipPlans([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             logger.LogInformation("Fetching all membership plans.");
 
-            var membershipPlans = await membershipPlanRepository.GetAllMembershipPlans();
+            var membershipPlans = await membershipPlanRepository.GetAllMembershipPlans(pageNumber, pageSize);
             if (membershipPlans == null || !membershipPlans.Any())
             {
                 return NoContent();

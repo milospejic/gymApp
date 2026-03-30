@@ -5,7 +5,6 @@ COPY Backend/Backend.csproj ./
 RUN dotnet restore "Backend.csproj"
 
 COPY Backend/. .
-
 RUN dotnet publish "Backend.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
@@ -14,4 +13,7 @@ COPY --from=build /app/publish .
 
 ENV ASPNETCORE_HTTP_PORTS=7151
 EXPOSE 7151
+
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "Backend.dll"]

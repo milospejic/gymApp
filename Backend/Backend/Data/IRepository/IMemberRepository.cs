@@ -11,11 +11,14 @@ namespace Backend.Data.IRepository
     /// </summary>
     public interface IMemberRepository
     {
+        
         /// <summary>
-        /// Retrieves all members.
+        /// Retrieves a paginated list of members.
         /// </summary>
-        /// <returns>A collection of <see cref="MemberDto"/> representing all members.</returns>
-        Task<IEnumerable<MemberDto>> GetAllMembers();
+        /// <param name="pageNumber">The page number to retrieve (starts at 1).</param>
+        /// <param name="pageSize">The maximum number of records per page.</param>
+        /// <returns>A collection of <see cref="MemberDto"/> representing the members.</returns>
+        Task<IEnumerable<MemberDto>> GetAllMembers(int pageNumber = 1, int pageSize = 50);
 
         /// <summary>
         /// Retrieves a member by their unique identifier.

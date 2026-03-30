@@ -1,9 +1,11 @@
 ﻿using Backend.AuthHelp;
-using Microsoft.AspNetCore.Mvc;
+using Backend.Data.Context;
 using Backend.Dto.BasicDtos;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authorization;
 using Backend.Utils.CustomExceptions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Backend.Controllers
 {
@@ -17,16 +19,18 @@ namespace Backend.Controllers
     {
         private readonly IAuthService authService;
         private readonly ILogger<AuthController> logger;
+        private readonly MyDbContext context;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
         /// </summary>
         /// <param name="authService">ervice for handling authentication logic.</param>
         /// <param name="logger">Logger for capturing controller activity.</param>
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        public AuthController(IAuthService authService, ILogger<AuthController> logger, MyDbContext context)
         {
             this.authService = authService;
             this.logger = logger;
+            this.context = context;
         }
 
         /// <summary>
@@ -54,7 +58,6 @@ namespace Backend.Controllers
                     .Select(e => e.ErrorMessage)
                     .ToList();
                 throw new BadRequestException($"Validation failed for LoginDto: {string.Join(" | ", errors)}");
-
             }
             logger.LogInformation("Login attempt for email: {Email}", loginDto.Email);
 
@@ -62,19 +65,86 @@ namespace Backend.Controllers
             if (admin != null)
             {
                 var token = authService.GenerateToken(admin.AdminEmail, "Admin", admin.AdminId);
+                var refreshToken = authService.GenerateRefreshToken();
+
+                admin.RefreshToken = refreshToken;
+                admin.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+                await context.SaveChangesAsync();
+
                 logger.LogInformation("Admin login successful for email: {Email}", admin.AdminEmail);
-                return Ok(new { Token = token, Role = "Admin" });
+                return Ok(new TokenModelDto { AccessToken = token, RefreshToken = refreshToken, Role = "Admin" });
             }
 
             var member = await authService.IsMember(loginDto);
             if (member != null)
             {
                 var token = authService.GenerateToken(member.MemberEmail, "Member", member.MemberId);
+                var refreshToken = authService.GenerateRefreshToken();
+
+                member.RefreshToken = refreshToken;
+                member.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+                await context.SaveChangesAsync();
+
                 logger.LogInformation("Member login successful for email: {Email}", member.MemberEmail);
-                return Ok(new { Token = token, Role = "Member" });
+                return Ok(new TokenModelDto { AccessToken = token, RefreshToken = refreshToken, Role = "Member" });
             }
 
-             throw new UnauthorizedAccessException("Invalid credentials");
+            throw new UnauthorizedAccessException("Invalid credentials");
+        }
+
+        [AllowAnonymous]
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] TokenModelDto tokenModel)
+        {
+            if (tokenModel is null) return BadRequest("Invalid client request");
+
+            string accessToken = tokenModel.AccessToken;
+            string refreshToken = tokenModel.RefreshToken;
+
+            ClaimsPrincipal principal;
+            try 
+            {
+                principal = authService.GetPrincipalFromExpiredToken(accessToken);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Invalid access token format.");
+            }
+
+            var email = principal.FindFirstValue(ClaimTypes.Email);
+            var role = principal.FindFirstValue(ClaimTypes.Role);
+            var id = Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (role == "Admin")
+            {
+                var admin = await context.Admins.FindAsync(id);
+                if (admin == null || admin.RefreshToken != refreshToken || admin.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                    return BadRequest("Invalid refresh token");
+
+                var newAccessToken = authService.GenerateToken(email, role, id);
+                var newRefreshToken = authService.GenerateRefreshToken();
+
+                admin.RefreshToken = newRefreshToken;
+                await context.SaveChangesAsync();
+
+                return Ok(new TokenModelDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken, Role = role });
+            }
+            else if (role == "Member")
+            {
+                var member = await context.Members.FindAsync(id);
+                if (member == null || member.RefreshToken != refreshToken || member.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                    return BadRequest("Invalid refresh token");
+
+                var newAccessToken = authService.GenerateToken(email, role, id);
+                var newRefreshToken = authService.GenerateRefreshToken();
+
+                member.RefreshToken = newRefreshToken;
+                await context.SaveChangesAsync();
+
+                return Ok(new TokenModelDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken, Role = role });
+            }
+
+            return BadRequest("Invalid request");
         }
     }
 

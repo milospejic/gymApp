@@ -50,10 +50,10 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<AdminDto>>> GetAllAdmins()
+        public async Task<ActionResult<IEnumerable<AdminDto>>> GetAllAdmins([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             logger.LogInformation("Fetching all admins.");
-            var admins = await adminRepository.GetAllAdmins();
+            var admins = await adminRepository.GetAllAdmins(pageNumber, pageSize);
             if (admins == null || !admins.Any())
             {
                 return NoContent();

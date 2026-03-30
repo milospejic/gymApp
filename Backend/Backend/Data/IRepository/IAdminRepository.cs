@@ -14,8 +14,10 @@ namespace Backend.Data.IRepository
         /// <summary>
         /// Retrieves all administrators.
         /// </summary>
-        /// <returns>A collection of <see cref="AdminDto"/> representing all administrators.</returns>
-        Task<IEnumerable<AdminDto>> GetAllAdmins();
+        /// <param name="pageNumber">The page number to retrieve (starts at 1).</param>
+        /// <param name="pageSize">The maximum number of records per page.</param>
+        /// <returns>A collection of <see cref="AdminDto"/> representing the admins.</returns>
+        Task<IEnumerable<AdminDto>> GetAllAdmins(int pageNumber = 1, int pageSize = 50);
 
         /// <summary>
         /// Retrieves an admin by their unique identifier.

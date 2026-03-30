@@ -1,5 +1,6 @@
 ﻿using Backend.Dto.BasicDtos;
 using Backend.Entities;
+using System.Security.Claims;
 
 namespace Backend.AuthHelp
 {
@@ -31,5 +32,9 @@ namespace Backend.AuthHelp
         /// <returns>The authenticated Admin entity if credentials are valid; otherwise, null.</returns>
         Task<Admin> IsAdmin(LoginDto loginDto);
 
+
+        string GenerateRefreshToken();
+        ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
     }
 }
+

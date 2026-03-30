@@ -1,42 +1,54 @@
-# Visual Studio
+# ==========================================
+# ASP.NET Core / Visual Studio
+# ==========================================
+## Build results
+[Bb]in/
+[Oo]bj/
+
+## Visual Studio / Rider specific files
 .vs/
+.idea/
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
+*.dbmdl
 
-# Build results
-bin/
-obj/
-out/
+## Publish output
+[Pp]ublish/
+[Oo]ut/
 
-# NuGet packages
-*.nupkg
-*.snupkg
-packages/
-.nuget/
+# ==========================================
+# Docker & Secrets (CRITICAL)
+# ==========================================
+# Ignore the .env file that contains your real DB Password!
+.env
+.env.*
+!.env.example # (Optional: you can keep a dummy example file tracked)
 
-# ASP.NET Core
-wwwroot/lib/
-appsettings.*.json
-appsettings.Local.json
+# If you put real passwords in your Development settings, uncomment the line below to ignore it!
+# appsettings.Development.json 
 
-# Rider
-.idea/
+# ==========================================
+# Entity Framework Core
+# ==========================================
+# Ignore local SQLite databases if you ever test with them
+*.db
+*.db-shm
+*.db-wal
 
-# Logs
-*.log
-
-# OS generated
+# ==========================================
+# OS Generated Files
+# ==========================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Node.js (if using frontend)
-node_modules/
-
-# JetBrains Rider
-.idea/
-*.sln.iml
-
-# Secrets
-.env
+# ==========================================
+# Logs
+# ==========================================
+*.log

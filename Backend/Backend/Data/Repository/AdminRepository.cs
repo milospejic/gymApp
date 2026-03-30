@@ -33,9 +33,15 @@ namespace Backend.Data.Repository
         /// Retrieves all admins from the database.
         /// </summary>
         /// <returns>A collection of <see cref="AdminDto"/> representing all admins.</returns>
-        public async Task<IEnumerable<AdminDto>> GetAllAdmins()
+        public async Task<IEnumerable<AdminDto>> GetAllAdmins(int pageNumber = 1, int pageSize = 50)
         {
-            var admins = await context.Admins.ToListAsync();
+
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            pageSize = pageSize > 100 ? 100 : pageSize;
+            var admins = await context.Admins
+                 .Skip((pageNumber - 1) * pageSize)
+                 .Take(pageSize)
+                 .ToListAsync();
             return mapper.Map<IEnumerable<AdminDto>>(admins);
         }
 

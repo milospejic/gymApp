@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -58,9 +59,13 @@ namespace Backend
             {
                 options.AddPolicy("AllowFrontend", builder =>
                 {
-                    builder.WithOrigins("http://localhost:5173") // Vite default port
+                    // Read the origin from appsettings or environment variables
+                    var allowedOrigins = Configuration["AllowedOrigins"]?.Split(',') ?? Array.Empty<string>();
+
+                    builder.WithOrigins(allowedOrigins)
                            .AllowAnyHeader()
-                           .AllowAnyMethod();
+                           .AllowAnyMethod()
+                           .AllowCredentials(); 
                 });
             });
 
@@ -108,7 +113,10 @@ namespace Backend
             });
 
             // Add AutoMapper configuration for mapping DTOs to entities
-            services.AddAutoMapper(typeof(Startup).Assembly);
+            services.AddAutoMapper(cfg =>
+            {
+                cfg.AddMaps(typeof(Startup).Assembly);
+            });
 
             // Configures the DbContext for SQL Server
             services.AddDbContext<MyDbContext>(options =>
@@ -143,7 +151,8 @@ namespace Backend
                     ValidIssuer = Configuration["Jwt:Issuer"],
                     ValidateAudience = true,
                     ValidAudience = Configuration["Jwt:Audience"],
-                    ValidateLifetime = true
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 
