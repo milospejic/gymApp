@@ -1,6 +1,6 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/auth`;; // Update with your backend URL
+const API_BASE_URL = '/api/membership'; 
 
 export interface Membership {
     membershipId: string;
@@ -18,36 +18,27 @@ export interface MembershipUpdate {
 }
 
 export const membershipService = {
-    getAllMemberships: async (token: string): Promise<Membership[]> => {
+    getAllMemberships: async (): Promise<Membership[]> => {
         try {
-          const response = await axios.get(`${API_BASE_URL}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const response = await apiClient.get(`${API_BASE_URL}`);
           return response.data;
         } catch (error) {
           console.error('Error fetching memberships:', error);
           throw error;
         }
       },
-    getMembershipById: async (id: string, token: string): Promise<Membership> => {
+    getMembershipById: async (id: string): Promise<Membership> => {
         try {
-          const response = await axios.get(`${API_BASE_URL}/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const response = await apiClient.get(`${API_BASE_URL}/${id}`);
           return response.data;
         } catch (error) {
           console.error(`Error fetching membership with ID ${id}:`, error);
           throw error;
         }
     },
-    updateMembership: async (id: string, membershipData: MembershipUpdate, token: string): Promise<string> => {
+    updateMembership: async (id: string, membershipData: MembershipUpdate): Promise<string> => {
         try {
-          const response = await axios.put(`${API_BASE_URL}/${id}`, membershipData, {
-            headers: { 
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          const response = await apiClient.put(`${API_BASE_URL}/${id}`, membershipData);
           return response.data;
         } catch (error) {
           console.error(`Error updating membership with ID ${id}:`, error);

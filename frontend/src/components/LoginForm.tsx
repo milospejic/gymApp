@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { authService } from "../services/authService";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react"; // Import eye icons for visibility toggle
+import { Eye, EyeOff } from "lucide-react"; 
 import { useAuth } from "../contexts/AuthContext";
 
 const LoginForm = () => {
@@ -18,13 +18,11 @@ const LoginForm = () => {
 
     try {
       const response = await authService.login({ email, password });
-      
-      // Use the context's login function instead of directly setting localStorage
-      login(response.token, response.role);
-      
+
+      login(response.accessToken, response.refreshToken, response.role);
+
       navigate("/"); // Redirect to home page after login
-    } catch (err) {
-      setError("Invalid email or password. Please try again.");
+    } catch (err) {      setError("Invalid email or password. Please try again.");
       console.error(err);
     }
   };

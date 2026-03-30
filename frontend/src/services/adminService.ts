@@ -1,6 +1,6 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/auth`;; 
+const API_BASE_URL = '/api/admin'; 
 
 export interface Admin {
     adminID: string;
@@ -32,11 +32,9 @@ export interface PasswordUpdate{
 }
 
 export const adminService = {
-  getAllAdmins: async (token: string): Promise<Admin[]> => {
+  getAllAdmins: async (): Promise<Admin[]> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get(`${API_BASE_URL}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching admins:', error);
@@ -44,11 +42,9 @@ export const adminService = {
     }
   },
 
-  getMyInfo: async (token: string): Promise<Admin> => {
+  getMyInfo: async (): Promise<Admin> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/myInfo`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get(`${API_BASE_URL}/myInfo`);
       return response.data;
     } catch (error) {
       console.error('Error fetching user info:', error);
@@ -56,11 +52,9 @@ export const adminService = {
     }
   },
 
-  getAdminById: async (id: string, token: string): Promise<Admin> => {
+  getAdminById: async (id: string): Promise<Admin> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get(`${API_BASE_URL}/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching admin with ID ${id}:`, error);
@@ -68,11 +62,9 @@ export const adminService = {
     }
   },
 
-  getAdminByEmail: async (email: string, token : string): Promise<Admin> => {
+  getAdminByEmail: async (email: string): Promise<Admin> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/email?email=${email}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get(`${API_BASE_URL}/email?email=${email}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching admin with email ${email}:`, error);
@@ -82,9 +74,7 @@ export const adminService = {
 
   createAdmin: async (adminData : AdminCreate): Promise<string> => {
     try {
-      const response = await axios.post(`${API_BASE_URL}`, adminData, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const response = await apiClient.post(`${API_BASE_URL}`, adminData);
       return response.data;
     } catch (error) {
       console.error('Error creating admin:', error);
@@ -92,14 +82,9 @@ export const adminService = {
     }
   },
 
-  updateAdmin: async (id: string, adminData: AdminUpdate, token: string): Promise<string> => {
+  updateAdmin: async (id: string, adminData: AdminUpdate): Promise<string> => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/${id}`, adminData, {
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.put(`${API_BASE_URL}/${id}`, adminData);
       return response.data;
     } catch (error) {
       console.error(`Error updating admin with ID ${id}:`, error);
@@ -107,27 +92,22 @@ export const adminService = {
     }
   },
 
-  deleteAdmin: async (id: string, token: string): Promise<void> => {
+  deleteAdmin: async (id: string): Promise<void> => {
     try {
-        await axios.delete(`${API_BASE_URL}/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+        await apiClient.delete(`${API_BASE_URL}/${id}`);
     } catch (error) {
       console.error(`Error deleting admin with ID ${id}:`, error);
       throw error;
     }
   },
 
-  changeAdminPassword: async (data: PasswordUpdate, token: string): Promise<string> => {
+  changeAdminPassword: async (data: PasswordUpdate): Promise<string> => {
     try {
-        const response = await axios.patch(`${API_BASE_URL}/`,data, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          return response.data;
+        const response = await apiClient.patch(`${API_BASE_URL}/`, data);
+        return response.data;
     } catch (error) {
         console.error(`Error changing admin password:`, error);
       throw error;
     }
   }
 };
-

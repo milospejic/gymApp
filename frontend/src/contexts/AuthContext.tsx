@@ -3,35 +3,37 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 interface AuthContextType {
   isAuthenticated: boolean;
   role: string | null;
-  login: (token: string, role: string) => void;
+  login: (accessToken: string, refreshToken: string, role: string) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem("token"));
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem("accessToken"));
   const [role, setRole] = useState<string | null>(localStorage.getItem("role"));
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const accessToken = localStorage.getItem("accessToken");
     const userRole = localStorage.getItem("role");
 
-    if (token) {
+    if (accessToken) {
       setIsAuthenticated(true);
       setRole(userRole);
     }
   }, []);
 
-  const login = (token: string, role: string) => {
-    localStorage.setItem("token", token);
+  const login = (accessToken: string, refreshToken: string, role: string) => {
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("role", role);
     setIsAuthenticated(true);
     setRole(role);
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("role");
     setIsAuthenticated(false);
     setRole(null);

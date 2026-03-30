@@ -1,6 +1,6 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/auth`;; // Update with your backend URL
+const API_BASE_URL = '/api/member';
 
 export interface Member {
     memberID: string;
@@ -39,11 +39,9 @@ export interface PasswordUpdate{
 }
 
 export const memberService = {
-  getAllMembers: async (token: string): Promise<Member[]> => {
+  getAllMembers: async (): Promise<Member[]> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get(`${API_BASE_URL}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching members:', error);
@@ -51,11 +49,9 @@ export const memberService = {
     }
   },
 
-  getMyInfo: async (token: string): Promise<Member> => {
+  getMyInfo: async (): Promise<Member> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/myInfo`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get(`${API_BASE_URL}/myInfo`);
       return response.data;
     } catch (error) {
       console.error('Error fetching user info:', error);
@@ -63,11 +59,9 @@ export const memberService = {
     }
   },
 
-  getMemberById: async (id: string, token: string): Promise<Member> => {
+  getMemberById: async (id: string): Promise<Member> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get(`${API_BASE_URL}/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching member with ID ${id}:`, error);
@@ -75,11 +69,9 @@ export const memberService = {
     }
   },
 
-  getMemberByMembershipId: async (membershipId: string, token: string): Promise<Member> => {
+  getMemberByMembershipId: async (membershipId: string): Promise<Member> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/membership?membershipId=${membershipId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get(`${API_BASE_URL}/membership?membershipId=${membershipId}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching member with Membership ID ${membershipId}:`, error);
@@ -87,11 +79,9 @@ export const memberService = {
     }
   },
 
-  getMemberByEmail: async (email: string, token : string): Promise<Member> => {
+  getMemberByEmail: async (email: string): Promise<Member> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/email?email=${email}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get(`${API_BASE_URL}/email?email=${email}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching member with email ${email}:`, error);
@@ -101,9 +91,7 @@ export const memberService = {
 
   createMember: async (memberData : MemberCreate): Promise<string> => {
     try {
-      const response = await axios.post(`${API_BASE_URL}`, memberData, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const response = await apiClient.post(`${API_BASE_URL}`, memberData);
       return response.data;
     } catch (error) {
       console.error('Error creating member:', error);
@@ -111,14 +99,9 @@ export const memberService = {
     }
   },
 
-  updateMember: async (id: string, memberData: MemberUpdate, token: string): Promise<string> => {
+  updateMember: async (id: string, memberData: MemberUpdate): Promise<string> => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/${id}`, memberData, {
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.put(`${API_BASE_URL}/${id}`, memberData);
       return response.data;
     } catch (error) {
       console.error(`Error updating member with ID ${id}:`, error);
@@ -126,22 +109,18 @@ export const memberService = {
     }
   },
 
-  deleteMember: async (id: string, token: string): Promise<void> => {
+  deleteMember: async (id: string): Promise<void> => {
     try {
-        await axios.delete(`${API_BASE_URL}/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+        await apiClient.delete(`${API_BASE_URL}/${id}`);
     } catch (error) {
       console.error(`Error deleting member with ID ${id}:`, error);
       throw error;
     }
   },
 
-  changeMemberPassword: async (data: PasswordUpdate, token: string): Promise<string> => {
+  changeMemberPassword: async (data: PasswordUpdate): Promise<string> => {
     try {
-        const response = await axios.patch(`${API_BASE_URL}/`,data, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+        const response = await apiClient.patch(`${API_BASE_URL}/`, data);
         return response.data;
     } catch (error) {
         console.error(`Error changing member password:`, error);

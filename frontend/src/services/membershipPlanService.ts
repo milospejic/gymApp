@@ -1,7 +1,7 @@
-import axios from "axios";
+import apiClient from "./apiClient";
 import { Admin } from "./adminService";
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/auth`;;
+const API_BASE_URL = "/api/membershipPlan";
 
 export interface MembershipPlan {
   planID: string;
@@ -28,58 +28,43 @@ export interface MembershipPlanUpdate {
 export const membershipPlanService = {
   getMembershipPlans: async (): Promise<MembershipPlan[]> => {
     try {
-      const response = await axios.get<MembershipPlan[]>(API_BASE_URL, {
-        headers: {
-          Accept: "application/json",
-        },
-      });
+      const response = await apiClient.get<MembershipPlan[]>(API_BASE_URL);
       return response.data;
     } catch (error) {
       console.error("Error fetching membership plans:", error);
       throw error;
     }
   },
-  getMembershipPlanById: async (id: string, token: string): Promise<MembershipPlan> => {
+  getMembershipPlanById: async (id: string): Promise<MembershipPlan> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get(`${API_BASE_URL}/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching membership with ID ${id}:`, error);
       throw error;
     }
   },
-  createAdmin: async (membershipPlanData : MembershipPlanCreate): Promise<string> => {
+  createMembershipPlan: async (membershipPlanData : MembershipPlanCreate): Promise<string> => {
     try {
-      const response = await axios.post(`${API_BASE_URL}`, membershipPlanData, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const response = await apiClient.post(`${API_BASE_URL}`, membershipPlanData);
       return response.data;
     } catch (error) {
       console.error('Error creating membership plan:', error);
       throw error;
     }
   },
-  updateMembershipPlan: async (id: string, membershipPlanData: MembershipPlanUpdate, token: string): Promise<string> => {
+  updateMembershipPlan: async (id: string, membershipPlanData: MembershipPlanUpdate): Promise<string> => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/${id}`, membershipPlanData, {
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.put(`${API_BASE_URL}/${id}`, membershipPlanData);
       return response.data;
     } catch (error) {
       console.error(`Error updating membership with ID ${id}:`, error);
       throw error;
     }
   },
-  deleteMembershipPlan: async (id: string, token: string): Promise<void> => {
+  deleteMembershipPlan: async (id: string): Promise<void> => {
   try {
-      await axios.delete(`${API_BASE_URL}/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      await apiClient.delete(`${API_BASE_URL}/${id}`);
   } catch (error) {
     console.error(`Error deleting membership Plan with ID ${id}:`, error);
     throw error;
