@@ -39,6 +39,7 @@ namespace Backend.Data.Repository
             pageNumber = pageNumber < 1 ? 1 : pageNumber;
             pageSize = pageSize > 100 ? 100 : pageSize;
             var admins = await context.Admins
+                 .OrderBy(a => a.AdminId)
                  .Skip((pageNumber - 1) * pageSize)
                  .Take(pageSize)
                  .ToListAsync();

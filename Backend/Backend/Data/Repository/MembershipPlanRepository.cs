@@ -39,6 +39,7 @@ namespace Backend.Data.Repository
             pageSize = pageSize > 100 ? 100 : pageSize;
             var membershipPlans = await context.MembershipPlans
                  .Include(m => m.Admin)
+                 .OrderBy(m => m.PlanID)
                  .Skip((pageNumber - 1) * pageSize)
                  .Take(pageSize)
                  .ToListAsync();

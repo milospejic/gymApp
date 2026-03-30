@@ -42,6 +42,7 @@ namespace Backend.Data.Repository
                 .Include(m => m.Membership)
                     .ThenInclude(ms => ms.MembershipPlan)
                     .ThenInclude(ma => ma.Admin)
+                .OrderBy(m => m.MemberId)
                 .Skip((pageNumber - 1) * pageSize) 
                 .Take(pageSize)                   
                 .ToListAsync();
