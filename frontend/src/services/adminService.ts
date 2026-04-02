@@ -1,35 +1,7 @@
 import apiClient from './apiClient';
+import { Admin, AdminCreate, AdminUpdate, PasswordUpdate } from '../interfaces';
 
 const API_BASE_URL = '/api/admin'; 
-
-export interface Admin {
-    adminID: string;
-    adminName: string;
-    adminSurname: string;
-    adminEmail: string;
-    adminPhone: string;
-}
-
-export interface AdminCreate {
-    adminName: string;
-    adminSurname: string;
-    adminEmail: string;
-    adminPhone: string;
-    adminHashedPassword: string;
-}
-
-export interface AdminUpdate {
-    adminName: string;
-    adminSurname: string;
-    adminEmail: string;
-    adminPhone: string;
-}
-
-export interface PasswordUpdate{
-    currentPassword: string;
-    newPassword: string;
-    confirmNewPassword: string;
-}
 
 export const adminService = {
   getAllAdmins: async (): Promise<Admin[]> => {

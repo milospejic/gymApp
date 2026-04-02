@@ -1,16 +1,12 @@
 import LoginForm from "../components/LoginForm";
-import { Link } from "react-router-dom"; // If you're using React Router
 
 const Login = () => {
   return (
-    <div className="vh-100">
+    <div className="container" style={{ minHeight: 'calc(100vh - 80px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 0' }}>
+      <div className="bg-mesh" style={{ position: 'fixed', inset: 0, zIndex: -1 }} />
       <LoginForm />
-      <p className="text-light text-center ">
-        Don't have an account yet? <Link to="/register">Sign Up</Link>
-      </p>
     </div>
   );
 };
 
 export default Login;
-

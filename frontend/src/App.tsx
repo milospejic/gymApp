@@ -1,15 +1,16 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import Navbar from "./components/Navbar";
 import AppRoutes from "./routes/AppRoutes";
 import { AuthProvider } from "./contexts/AuthContext";
+import "./App.css";
 
 const App = () => {
   return (
     <AuthProvider>
-      <div className='d-flex flex-column w-100 bg-dark'>
+      <div className='app-container'>
         <Navbar />
-        <AppRoutes />
+        <main className="main-content">
+          <AppRoutes />
+        </main>
       </div>
     </AuthProvider>
   );

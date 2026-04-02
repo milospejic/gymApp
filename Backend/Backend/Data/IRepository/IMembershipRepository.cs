@@ -38,5 +38,11 @@ namespace Backend.Data.IRepository
         /// <param name="membershipId">The unique identifier of the membership to update.</param>
         /// <param name="membershipUpdateDto">The DTO containing updated membership details.</param>
         Task UpdateMembership(Guid? membershipId, MembershipUpdateDto membershipUpdateDto);
+
+        /// <summary>
+        /// Cancels a membership by setting its end date to the current time.
+        /// </summary>
+        /// <param name="membershipId">The unique identifier of the membership to cancel.</param>
+        Task CancelMembership(Guid membershipId);
     }
 }

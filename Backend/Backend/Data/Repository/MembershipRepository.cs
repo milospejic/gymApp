@@ -165,6 +165,27 @@ namespace Backend.Data.Repository
             await context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Cancels a membership by setting its end date to the current time.
+        /// </summary>
+        /// <param name="id">The unique identifier of the membership to cancel.</param>
+        /// <exception cref="ArgumentException">Thrown when the membership is not found or is already expired.</exception>
+        public async Task CancelMembership(Guid id)
+        {
+            var membership = await context.Memberships.FindAsync(id);
+            if (membership == null)
+            {
+                throw new ArgumentException("Membership not found");
+            }
+
+            if (membership.MembershipTo < DateTime.Now)
+            {
+                throw new ArgumentException("Membership is already expired.");
+            }
+
+            membership.MembershipTo = DateTime.Now;
+            await context.SaveChangesAsync();
+        }
 
     }
 }

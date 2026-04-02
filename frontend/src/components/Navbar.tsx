@@ -1,117 +1,168 @@
-import { FC } from "react";
+import { FC, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Menu, X, Dumbbell, ShieldCheck, LayoutDashboard, UserCircle, CreditCard } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import "./Navbar.css";
 
 const Navbar: FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, role, logout } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
+  const navLinks = [
+    { path: "/", label: "Home" },
+    { path: "/about", label: "About" },
+    { path: "/plans", label: "Plans" }
+  ];
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-primary shadow-sm">
-      <div className="container-fluid">
-        <Link className="navbar-brand fs-2 fw-bold" to="/">
-          MyGym
+    <nav className={`navbar ${isScrolled ? "navbar-scrolled" : ""}`}>
+      <div className="container navbar-inner">
+        
+        {/* Logo */}
+        <Link to="/" className="navbar-logo">
+          <div className="logo-icon">
+            <Dumbbell className="icon-white" />
+          </div>
+          <span className="logo-text italic">
+            My<span className="text-primary">Gym</span>
+          </span>
         </Link>
 
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-
-        <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul className="navbar-nav mb-2 mb-lg-0 text-center">
-            {[
-              { path: "/", label: "Home" },
-              { path: "/about", label: "About Us" },
-              { path: "/plans", label: "Membership Plans" }
-            ].map(({ path, label }) => (
-              <li className="nav-item" key={path}>
-                <Link
-                  className={`nav-link ${location.pathname === path ? "active fw-bold text-primary" : ""}`}
-                  to={path}
-                >
-                  {label}
-                </Link>
-              </li>
+        {/* Desktop Navigation */}
+        <div className="navbar-desktop">
+          <div className="nav-links">
+            {navLinks.map(({ path, label }) => (
+              <Link
+                key={path}
+                to={path}
+                className={`nav-link ${location.pathname === path ? "nav-link-active" : ""}`}
+              >
+                {label}
+              </Link>
             ))}
-          </ul>
+          </div>
 
-          {/* Right Side */}
-          <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+          <div className="nav-divider" />
+
+          <div className="nav-actions">
             {isAuthenticated ? (
-              <>
-                {/* User Icon with Dropdown */}
-                <li className="nav-item dropdown">
-                  <Link
-                    className="nav-link dropdown-toggle d-flex align-items-center"
-                    to="#"
-                    id="userDropdown"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <User size={20} className="me-2" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li>
-                      <Link className="dropdown-item" to="/profile">
-                        Profile
-                      </Link>
-                    </li>
-                    {role === "Member" ? (
-                      <li>
-                        <Link className="dropdown-item" to="/membership">
-                          Membership
-                        </Link>
-                      </li>
-                    ) : role === "Admin" ? (
-                      <>
-                        <li>
-                          <Link className="dropdown-item" to="/plan-factory">
-                            Plan Factory
-                          </Link>
-                        </li>
-                        <li>
-                          <Link className="dropdown-item" to="/dashboard">
-                            Dashboard
-                          </Link>
-                        </li>
-                      </>
-                    ) : null}
-                  </ul>
-                </li>
+              <div className="nav-user-dropdown">
+                <button 
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+                  className="user-button"
+                >
+                  <UserCircle className="text-primary" size={20} />
+                  <span className="user-role">{role}</span>
+                </button>
 
-                {/* Logout Button */}
-                <li className="nav-item">
-                  <button className="btn btn-danger ms-2" onClick={handleLogout}>
-                    <LogOut size={20} className="me-1" /> Logout
-                  </button>
-                </li>
-              </>
+                {isDropdownOpen && (
+                  <div className="dropdown-menu animate-fade-in">
+                    <Link to="/profile" className="dropdown-item">
+                      <User size={16} /> Profile
+                    </Link>
+                    {role === "Member" && (
+                      <Link to="/membership" className="dropdown-item">
+                        <CreditCard size={16} /> Membership
+                      </Link>
+                    )}
+                    {role === "Admin" && (
+                      <>
+                        <Link to="/plan-factory" className="dropdown-item">
+                          <ShieldCheck size={16} /> Plan Factory
+                        </Link>
+                        <Link to="/dashboard" className="dropdown-item">
+                          <LayoutDashboard size={16} /> Dashboard
+                        </Link>
+                      </>
+                    )}
+                    <div className="dropdown-divider" />
+                    <button 
+                      onClick={handleLogout}
+                      className="dropdown-item logout-button"
+                    >
+                      <LogOut size={16} /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
-              <li className="nav-item">
-                <Link className="nav-link" to="/login">
-                  Login
-                </Link>
-              </li>
+              <Link to="/login" className="btn-premium">
+                Sign In
+              </Link>
             )}
-          </ul>
+          </div>
+        </div>
+
+        {/* Mobile Menu Toggle */}
+        <div className="navbar-mobile-toggle">
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="toggle-button"
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="mobile-menu animate-fade-in">
+          {navLinks.map(({ path, label }) => (
+            <Link
+              key={path}
+              to={path}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`mobile-nav-link ${location.pathname === path ? "nav-link-active" : ""}`}
+            >
+              {label}
+            </Link>
+          ))}
+          <div className="dropdown-divider" />
+          {isAuthenticated ? (
+            <div className="mobile-user-actions">
+              <Link 
+                to="/profile" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="mobile-nav-link"
+              >
+                Profile
+              </Link>
+              <button 
+                onClick={handleLogout}
+                className="btn-premium logout-btn"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link 
+              to="/login" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="btn-premium mobile-signin-btn"
+            >
+              Sign In
+            </Link>
+          )}
+        </div>
+      )}
     </nav>
   );
 };

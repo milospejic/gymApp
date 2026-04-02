@@ -1,17 +1,7 @@
 import apiClient from "./apiClient";
+import { LoginDto, AuthResponse } from "../interfaces";
 
 const API_BASE_URL = "/api/auth";
-
-interface LoginDto {
-  email: string;
-  password: string;
-}
-
-interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  role: string;
-}
 
 export const authService = {
   login: async (loginDto: LoginDto): Promise<AuthResponse> => {

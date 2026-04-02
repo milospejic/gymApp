@@ -1,21 +1,7 @@
 import apiClient from './apiClient';
+import { Membership, MembershipUpdate } from '../interfaces';
 
 const API_BASE_URL = '/api/membership'; 
-
-export interface Membership {
-    membershipId: string;
-    membershipFrom: string;
-    membershipTo: string;
-    planDuration: number; 
-    membershipFee: string; 
-    isFeePaid: string;  
-    membershipPlanId: string;
-}
-
-export interface MembershipUpdate {
-    planDuration: number;
-    membershipPlanId: string; 
-}
 
 export const membershipService = {
     getAllMemberships: async (): Promise<Membership[]> => {
@@ -42,6 +28,15 @@ export const membershipService = {
           return response.data;
         } catch (error) {
           console.error(`Error updating membership with ID ${id}:`, error);
+          throw error;
+        }
+    },
+    cancelMembership: async (id: string): Promise<string> => {
+        try {
+          const response = await apiClient.post(`${API_BASE_URL}/${id}/cancel`);
+          return response.data;
+        } catch (error) {
+          console.error(`Error cancelling membership with ID ${id}:`, error);
           throw error;
         }
     }

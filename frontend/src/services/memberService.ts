@@ -1,42 +1,7 @@
 import apiClient from './apiClient';
+import { Member, MemberCreate, MemberUpdate, PasswordUpdate } from '../interfaces';
 
 const API_BASE_URL = '/api/member';
-
-export interface Member {
-    memberID: string;
-    memberName: string;
-    memberSurname: string;
-    memberEmail: string; 
-    memberPhone: string; 
-    membershipId: string;  
-}
-
-export interface MembershipCreate {
-    planDuration: number;
-    membershipPlanId: string; 
-}
-
-export interface MemberCreate {
-    memberName: string;
-    memberSurname: string;
-    memberEmail: string;
-    memberPhone: string;
-    memberHashedPassword: string;
-    membership: MembershipCreate;
-}
-
-export interface MemberUpdate {
-    memberName: string;
-    memberSurname: string;
-    memberEmail: string;
-    memberPhone: string;
-}
-
-export interface PasswordUpdate{
-    currentPassword: string;
-    newPassword: string;
-    confirmNewPassword: string;
-}
 
 export const memberService = {
   getAllMembers: async (): Promise<Member[]> => {
@@ -128,4 +93,3 @@ export const memberService = {
     }
   }
 };
-

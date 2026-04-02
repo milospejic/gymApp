@@ -1,16 +1,12 @@
-import { Link } from "react-router-dom";
 import RegistrationForm from "../components/RegistrationForm";
 
-const Registartion = () => {
+const Registration = () => {
   return (
-    <div className="vh-100">
+    <div className="container" style={{ minHeight: 'calc(100vh - 80px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 0' }}>
+      <div className="bg-mesh" style={{ position: 'fixed', inset: 0, zIndex: -1 }} />
       <RegistrationForm />
-      <p className="text-light text-center">
-        Already have an account? <Link to="/login">Sign In</Link>
-      </p>
     </div>
-    
   );
 };
 
-export default Registartion;
+export default Registration;

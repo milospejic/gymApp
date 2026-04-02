@@ -150,6 +150,42 @@ namespace Backend.Controllers
             await membershipRepository.UpdateMembership(targetMembershipId, membershipDto);
             return Ok("Successfully updated membership!");
         }
+
+        /// <summary>
+        /// Cancels the authenticated member's membership by setting its end date to now.
+        /// Only accessible by authenticated members or admins.
+        /// </summary>
+        /// <param name="membershipId">The ID of the membership to cancel (required for admins).</param>
+        /// <returns>A success message if the cancellation is completed.</returns>
+        [Authorize(Roles = "Admin,Member")]
+        [HttpPost("{membershipId?}/cancel")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CancelMembership(Guid? membershipId)
+        {
+            var authenticatedId = GetAuthenticatedUserId();
+            if (authenticatedId == null) throw new UnauthorizedAccessException("Unauthorized cancellation attempt.");
+
+            Guid targetMembershipId;
+
+            if (User.IsInRole("Admin"))
+            {
+                if (membershipId == null) return BadRequest("Admins must provide a membership ID in the URL.");
+                targetMembershipId = membershipId.Value;
+            }
+            else
+            {
+                var member = await memberRepository.GetMemberById(authenticatedId);
+                targetMembershipId = member.MembershipId;
+            }
+
+            logger.LogInformation("Cancelling membership with ID: {MembershipId}", targetMembershipId);
+            await membershipRepository.CancelMembership(targetMembershipId);
+            return Ok("Successfully cancelled membership!");
+        }
+
         /// <summary>
         /// Retrieves the authenticated member's ID from claims.
         /// </summary>
