@@ -8,13 +8,13 @@ on:
     paths:
       # Backend paths
       - 'Backend/**'
-      # Frontend paths
-      - 'src/**' 
-      - 'public/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.ts'
-      - 'index.html'
+      # Frontend paths (Updated to reflect the frontend folder)
+      - 'frontend/src/**' 
+      - 'frontend/public/**'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'frontend/vite.config.ts'
+      - 'frontend/index.html'
 
 env:
   GCP_REGION: europe-west1
@@ -57,11 +57,11 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
 
       - name: Build and Push Backend Docker Image
         run: |
-          IMAGE_TAG=${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gym-app-images-${{ needs.set-environment.outputs.env_name }}/gym-backend:${{ github.sha }}
+          IMAGE_TAG=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gym-app-images-${{ needs.set-environment.outputs.env_name }}/gym-backend:${{ github.sha }}
           
           docker build -t $IMAGE_TAG -f Backend/Dockerfile Backend/
           docker push $IMAGE_TAG
@@ -72,7 +72,7 @@ jobs:
         run: |
           gcloud run deploy gym-backend-service-${{ needs.set-environment.outputs.env_name }} \
             --image ${{ env.IMAGE_TAG }} \
-            --region ${{ env.GCP_REGION }} \
+            --region ${{ secrets.GCP_REGION }} \
             --project ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Setup Node.js
@@ -81,6 +81,7 @@ jobs:
           node-version: '20' 
 
       - name: Install Frontend Dependencies
+        working-directory: ./frontend
         run: npm ci
 
       - name: Fetch Dynamic Infrastructure Values
@@ -88,7 +89,7 @@ jobs:
         run: |
           echo "Fetching Cloud Run API URL..."
           API_URL=$(gcloud run services describe gym-backend-service-${{ needs.set-environment.outputs.env_name }} \
-            --region ${{ env.GCP_REGION }} \
+            --region ${{ secrets.GCP_REGION }} \
             --project ${{ secrets.GCP_PROJECT_ID }} \
             --format 'value(status.url)')
           
@@ -103,8 +104,10 @@ jobs:
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
 
       - name: Build React App
+        working-directory: ./frontend 
         run: npm run build
 
       - name: Deploy Frontend to Cloud Storage
+        working-directory: ./frontend 
         run: |
           gcloud storage rsync ./dist gs://${{ env.BUCKET_NAME }} --recursive --delete-unmatched
