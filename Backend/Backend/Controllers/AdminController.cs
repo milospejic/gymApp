@@ -14,6 +14,7 @@ namespace Backend.Controllers
     /// such as retrieving, creating, updating, and deleting admin accounts.
     /// Requires Admin role authorization for all actions.
     /// </summary>
+    /// 
     [Route("api/admin")]
     [ApiController]
     public class AdminController : ControllerBase
