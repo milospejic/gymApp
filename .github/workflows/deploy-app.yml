@@ -111,3 +111,5 @@ jobs:
         working-directory: ./frontend 
         run: |
           gcloud storage rsync ./dist gs://${{ env.BUCKET_NAME }} --recursive --delete-unmatched-destination-objects
+          
+          gcloud storage objects update gs://${{ env.BUCKET_NAME }}/index.html --cache-control="no-cache, max-age=0"
