@@ -36,7 +36,6 @@ namespace Backend.Controllers
             this.logger = logger;
         }
 
-
         /// <summary>
         /// Retrieves a list of all administrators in the system.
         /// </summary>
