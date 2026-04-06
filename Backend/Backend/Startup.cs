@@ -60,9 +60,9 @@ namespace Backend
                 options.AddPolicy("AllowFrontend", builder =>
                 {
                     // Read the origin from appsettings or environment variables
-                    var allowedOrigins = Configuration["AllowedOrigins"]?.Split(',') ?? Array.Empty<string>();
+                    var corsOrigins = Configuration.GetSection("CorsOrigins").Get<string[]>();
 
-                    builder.WithOrigins(allowedOrigins)
+                    builder.WithOrigins(corsOrigins)
                            .AllowAnyHeader()
                            .AllowAnyMethod()
                            .AllowCredentials(); 

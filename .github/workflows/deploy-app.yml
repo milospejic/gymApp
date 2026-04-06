@@ -1,4 +1,4 @@
-name: Deploy Backend App
+name: Deploy Full Stack App
 
 on:
   push:
@@ -6,7 +6,15 @@ on:
       - develop  
       - main     
     paths:
-      - 'Backend/**' 
+      # Backend paths
+      - 'Backend/**'
+      # Frontend paths
+      - 'src/**' 
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'index.html'
 
 env:
   GCP_REGION: europe-west1
@@ -51,7 +59,7 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
-      - name: Build and Push Docker Image
+      - name: Build and Push Backend Docker Image
         run: |
           IMAGE_TAG=${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gym-app-images-${{ needs.set-environment.outputs.env_name }}/gym-backend:${{ github.sha }}
           
@@ -60,9 +68,43 @@ jobs:
           
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Deploy to Cloud Run
+      - name: Deploy Backend to Cloud Run
         run: |
           gcloud run deploy gym-backend-service-${{ needs.set-environment.outputs.env_name }} \
             --image ${{ env.IMAGE_TAG }} \
             --region ${{ env.GCP_REGION }} \
             --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' 
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+
+      - name: Fetch Dynamic Infrastructure Values
+        id: fetch-infra
+        run: |
+          echo "Fetching Cloud Run API URL..."
+          API_URL=$(gcloud run services describe gym-backend-service-${{ needs.set-environment.outputs.env_name }} \
+            --region ${{ env.GCP_REGION }} \
+            --project ${{ secrets.GCP_PROJECT_ID }} \
+            --format 'value(status.url)')
+          
+          echo "Fetching GCS Bucket Name..."
+          BUCKET_NAME=$(gcloud storage buckets list \
+            --project ${{ secrets.GCP_PROJECT_ID }} \
+            --filter "name~gym-app-ui-${{ needs.set-environment.outputs.env_name }}" \
+            --format "value(name)" \
+            --limit 1)
+            
+          echo "VITE_API_URL=$API_URL" >> $GITHUB_ENV
+          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
+
+      - name: Build React App
+        run: npm run build
+
+      - name: Deploy Frontend to Cloud Storage
+        run: |
+          gcloud storage rsync ./dist gs://${{ env.BUCKET_NAME }} --recursive --delete-unmatched
