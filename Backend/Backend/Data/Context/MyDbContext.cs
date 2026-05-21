@@ -16,7 +16,6 @@ namespace Backend.Data.Context
         /// Initializes a new instance of the <see cref="MyDbContext"/> class.
         /// </summary>
         /// <param name="options">The options for configuring the database context.</param>
-        /// <param name="configuration">The application configuration containing database connection strings.</param>
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
         {
         }
@@ -41,12 +40,7 @@ namespace Backend.Data.Context
         /// </summary>
         public DbSet<MembershipPlan> MembershipPlans { get; set; }
 
-        /// <summary>
-        /// Configures the database connection using the connection string from the configuration.
-        /// </summary>
-        /// <param name="optionsBuilder">The options builder for configuring the database context.</param>
        
-
         /// <summary>
         /// Configures the entity relationships, constraints, and seed data for the database.
         /// </summary>
@@ -73,11 +67,14 @@ namespace Backend.Data.Context
 
             modelBuilder.Entity<Admin>()
                 .HasIndex(a => a.AdminEmail)
-                .IsUnique();
+                .IsUnique()
+                .HasDatabaseName("IX_Admin_AdminEmail");
+            
 
             modelBuilder.Entity<Member>()
                 .HasIndex(m => m.MemberEmail)
-                .IsUnique();
+                .IsUnique()
+                .HasDatabaseName("IX_Member_MemberEmail");
 
             modelBuilder.Entity<Admin>().HasData(
                 new Admin

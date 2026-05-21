@@ -4,75 +4,13 @@
         <name>Backend</name>
     </assembly>
     <members>
-        <member name="T:Backend.AuthHelp.AuthService">
-            <summary>
-            Implements the <see cref="T:Backend.AuthHelp.IAuthService"/> interface for managing auth-related operations.
-            </summary>
-        </member>
-        <member name="M:Backend.AuthHelp.AuthService.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Backend.Data.Context.MyDbContext)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Backend.AuthHelp.AuthService"/> class.
-            </summary>
-            <param name="configuration">Application configuration settings.</param>
-            <param name="context">Database context for accessing user data.</param>
-        </member>
-        <member name="M:Backend.AuthHelp.AuthService.IsMember(Backend.Dto.BasicDtos.LoginDto)">
-            <summary>
-            Validates a member's login credentials.
-            </summary>
-            <param name="loginDto">The login DTO containing email and password.</param>
-            <returns>The authenticated <see cref="T:Backend.Entities.Member"/> entity if credentials are valid; otherwise, null.</returns>
-        </member>
-        <member name="M:Backend.AuthHelp.AuthService.IsAdmin(Backend.Dto.BasicDtos.LoginDto)">
-            <summary>
-            Validates an admin's login credentials.
-            </summary>
-            <param name="loginDto">The login DTO containing email and password.</param>
-            <returns>The authenticated <see cref="T:Backend.Entities.Admin"/> entity if credentials are valid; otherwise, null.</returns>
-        </member>
-        <member name="M:Backend.AuthHelp.AuthService.GenerateToken(System.String,System.String,System.Guid)">
-            <summary>
-            Generates a JWT token for an authenticated user.
-            </summary>
-            <param name="email">The email of the authenticated user.</param>
-            <param name="role">The role of the authenticated user.</param>
-            <param name="id">The unique identifier of the authenticated user.</param>
-            <returns>A JWT token as a string.</returns>
-        </member>
-        <member name="T:Backend.AuthHelp.IAuthService">
-            <summary>
-            Defines authentication-related operations, including token generation and user validation.
-            </summary>
-        </member>
-        <member name="M:Backend.AuthHelp.IAuthService.GenerateToken(System.String,System.String,System.Guid)">
-            <summary>
-            Generates a JWT token for the authenticated user.
-            </summary>
-            <param name="email">The email of the user.</param>
-            <param name="role">The role of the user (e.g., Admin, Member).</param>
-            <param name="id">The unique identifier of the user.</param>
-            <returns>A JWT token as a string.</returns>
-        </member>
-        <member name="M:Backend.AuthHelp.IAuthService.IsMember(Backend.Dto.BasicDtos.LoginDto)">
-            <summary>
-            Validates a member's login credentials.
-            </summary>
-            <param name="loginDto">The login data transfer object containing email and password.</param>
-            <returns>The authenticated Member entity if credentials are valid; otherwise, null.</returns>
-        </member>
-        <member name="M:Backend.AuthHelp.IAuthService.IsAdmin(Backend.Dto.BasicDtos.LoginDto)">
-            <summary>
-            Validates an admin's login credentials.
-            </summary>
-            <param name="loginDto">The login data transfer object containing email and password.</param>
-            <returns>The authenticated Admin entity if credentials are valid; otherwise, null.</returns>
-        </member>
         <member name="T:Backend.Controllers.AdminController">
             <summary>
             Controller responsible for managing administrator-related operations,
             such as retrieving, creating, updating, and deleting admin accounts.
             Requires Admin role authorization for all actions.
             </summary>
+            
         </member>
         <member name="M:Backend.Controllers.AdminController.#ctor(Backend.Data.IRepository.IAdminRepository,Backend.Data.IRepository.IMemberRepository,Microsoft.Extensions.Logging.ILogger{Backend.Controllers.AdminController})">
             <summary>
@@ -192,28 +130,24 @@
         <member name="T:Backend.Controllers.AuthController">
             <summary>
             Controller responsible for managing authentication-related operations, 
-            such as logging in a user (both admin and member).
+            such as logging in a user and refreshing expired access tokens.
             </summary>
         </member>
-        <member name="M:Backend.Controllers.AuthController.#ctor(Backend.AuthHelp.IAuthService,Microsoft.Extensions.Logging.ILogger{Backend.Controllers.AuthController},Backend.Data.Context.MyDbContext)">
+        <member name="M:Backend.Controllers.AuthController.#ctor(Backend.AuthHelp.IAuthService,Microsoft.Extensions.Logging.ILogger{Backend.Controllers.AuthController})">
             <summary>
             Initializes a new instance of the <see cref="T:Backend.Controllers.AuthController"/> class.
+            Notice we removed MyDbContext completely from here!
             </summary>
-            <param name="authService">ervice for handling authentication logic.</param>
-            <param name="logger">Logger for capturing controller activity.</param>
         </member>
         <member name="M:Backend.Controllers.AuthController.Login(Backend.Dto.BasicDtos.LoginDto)">
             <summary>
-            Authenticates the user based on the provided login credentials and generates a JWT token for valid users.
+            Authenticates the user based on the provided login credentials and generates access/refresh tokens.
             </summary>
-            <param name="loginDto">DTO containing the user's email and password.</param>
-            <returns>Returns a JWT token if authentication is successful.</returns>
-            <remarks>
-            Possible errors:
-            - 400 Bad Request: If the provided data is invalid (e.g., missing or incorrect fields).
-            - 401 Unauthorized: If the credentials are incorrecte.
-            - 500 Internal Server Error: If an unexpected error occurs during processing.
-            </remarks>
+        </member>
+        <member name="M:Backend.Controllers.AuthController.Refresh(Backend.Dto.BasicDtos.TokenModelDto)">
+            <summary>
+            Validates an expired access token alongside a valid refresh token to rotate keys.
+            </summary>
         </member>
         <member name="T:Backend.Controllers.MemberController">
             <summary>
@@ -414,6 +348,14 @@
             - 500 Internal Server Error: If an unexpected error occurs during processing.
             </remarks>
         </member>
+        <member name="M:Backend.Controllers.MembershipController.CancelMembership(System.Nullable{System.Guid})">
+            <summary>
+            Cancels the authenticated member's membership by setting its end date to now.
+            Only accessible by authenticated members or admins.
+            </summary>
+            <param name="membershipId">The ID of the membership to cancel (required for admins).</param>
+            <returns>A success message if the cancellation is completed.</returns>
+        </member>
         <member name="M:Backend.Controllers.MembershipController.GetAuthenticatedUserId">
             <summary>
             Retrieves the authenticated member's ID from claims.
@@ -545,7 +487,6 @@
             Initializes a new instance of the <see cref="T:Backend.Data.Context.MyDbContext"/> class.
             </summary>
             <param name="options">The options for configuring the database context.</param>
-            <param name="configuration">The application configuration containing database connection strings.</param>
         </member>
         <member name="P:Backend.Data.Context.MyDbContext.Members">
             <summary>
@@ -568,10 +509,6 @@
             </summary>
         </member>
         <member name="M:Backend.Data.Context.MyDbContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <summary>
-            Configures the database connection using the connection string from the configuration.
-            </summary>
-            <param name="optionsBuilder">The options builder for configuring the database context.</param>
             <summary>
             Configures the entity relationships, constraints, and seed data for the database.
             </summary>
@@ -781,6 +718,12 @@
             </summary>
             <param name="membershipId">The unique identifier of the membership to update.</param>
             <param name="membershipUpdateDto">The DTO containing updated membership details.</param>
+        </member>
+        <member name="M:Backend.Data.IRepository.IMembershipRepository.CancelMembership(System.Guid)">
+            <summary>
+            Cancels a membership by setting its end date to the current time.
+            </summary>
+            <param name="membershipId">The unique identifier of the membership to cancel.</param>
         </member>
         <member name="T:Backend.Data.Repository.AdminRepository">
             <summary>
@@ -1024,6 +967,13 @@
             <param name="membershipDto">The DTO containing the updated details for the membership.</param>
             <exception cref="T:System.ArgumentNullException">Thrown when the provided ID is null.</exception>
             <exception cref="T:System.ArgumentException">Thrown when the membership or plan is not found, or when attempting to renew an active membership.</exception>
+        </member>
+        <member name="M:Backend.Data.Repository.MembershipRepository.CancelMembership(System.Guid)">
+            <summary>
+            Cancels a membership by setting its end date to the current time.
+            </summary>
+            <param name="id">The unique identifier of the membership to cancel.</param>
+            <exception cref="T:System.ArgumentException">Thrown when the membership is not found or is already expired.</exception>
         </member>
         <member name="T:Backend.Dto.BasicDtos.AdminDto">
             <summary>
@@ -1646,6 +1596,18 @@
             <inheritdoc />
         </member>
         <member name="M:Backend.Migrations.AddRefreshTokens.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Backend.Migrations.OptimizeAuthIndexes">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.OptimizeAuthIndexes.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.OptimizeAuthIndexes.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Backend.Migrations.OptimizeAuthIndexes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:Backend.Profiles.AdminProfile">

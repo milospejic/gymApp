@@ -1,8 +1,5 @@
 ﻿using Backend.Data.Context;
-using Backend.Data.IRepository;
-using Backend.Data.Repository;
 using Backend.Dto.BasicDtos;
-using Backend.Entities;
 using Backend.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,87 +10,99 @@ using System.Text;
 
 namespace Backend.AuthHelp
 {
-    /// <summary>
-    /// Implements the <see cref="IAuthService"/> interface for managing auth-related operations.
-    /// </summary>
     public class AuthService : IAuthService
     {
-        private readonly IConfiguration configuration;
-        private readonly MyDbContext context;
+        private readonly IConfiguration _configuration;
+        private readonly MyDbContext _context;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AuthService"/> class.
-        /// </summary>
-        /// <param name="configuration">Application configuration settings.</param>
-        /// <param name="context">Database context for accessing user data.</param>
         public AuthService(IConfiguration configuration, MyDbContext context)
         {
-            this.configuration = configuration;
-            this.context = context;
+            _configuration = configuration;
+            _context = context;
         }
 
-        /// <summary>
-        /// Validates a member's login credentials.
-        /// </summary>
-        /// <param name="loginDto">The login DTO containing email and password.</param>
-        /// <returns>The authenticated <see cref="Member"/> entity if credentials are valid; otherwise, null.</returns>
-        public async Task<Member> IsMember(LoginDto loginDto)
+        public async Task<TokenModelDto?> AuthenticateAsync(LoginDto loginDto)
         {
-            var member = await context.Members.SingleOrDefaultAsync(m => m.MemberEmail == loginDto.Email);
-            if (member != null && PasswordHasher.VerifyPassword(loginDto.Password, member.MemberHashedPassword))
-                return member;
-            return null;
-        }
-
-        /// <summary>
-        /// Validates an admin's login credentials.
-        /// </summary>
-        /// <param name="loginDto">The login DTO containing email and password.</param>
-        /// <returns>The authenticated <see cref="Admin"/> entity if credentials are valid; otherwise, null.</returns>
-        public async Task<Admin> IsAdmin(LoginDto loginDto)
-        {
-            var admin = await context.Admins.SingleOrDefaultAsync(a => a.AdminEmail == loginDto.Email);
+            var admin = await _context.Admins.SingleOrDefaultAsync(a => a.AdminEmail == loginDto.Email);
             if (admin != null && PasswordHasher.VerifyPassword(loginDto.Password, admin.AdminHashedPassword))
-                return admin;
-            return null;
-        }
-
-        /// <summary>
-        /// Generates a JWT token for an authenticated user.
-        /// </summary>
-        /// <param name="email">The email of the authenticated user.</param>
-        /// <param name="role">The role of the authenticated user.</param>
-        /// <param name="id">The unique identifier of the authenticated user.</param>
-        /// <returns>A JWT token as a string.</returns>
-        public string GenerateToken(string email, string role, Guid id)
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
             {
-            new Claim(ClaimTypes.NameIdentifier, id.ToString()),
-            new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.Role, role)
-        };
+                var accessToken = GenerateToken(admin.AdminEmail, "Admin", admin.AdminId);
+                var refreshToken = GenerateRefreshToken();
 
-            var token = new JwtSecurityToken(
-                configuration["Jwt:Issuer"],
-                configuration["Jwt:Audience"],
-                claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: credentials
-            );
+                admin.RefreshToken = refreshToken;
+                admin.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+                await _context.SaveChangesAsync();
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                return new TokenModelDto { AccessToken = accessToken, RefreshToken = refreshToken, Role = "Admin" };
+            }
+
+            var member = await _context.Members.SingleOrDefaultAsync(m => m.MemberEmail == loginDto.Email);
+            if (member != null && PasswordHasher.VerifyPassword(loginDto.Password, member.MemberHashedPassword))
+            {
+                var accessToken = GenerateToken(member.MemberEmail, "Member", member.MemberId);
+                var refreshToken = GenerateRefreshToken();
+
+                member.RefreshToken = refreshToken;
+                member.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+                await _context.SaveChangesAsync();
+
+                return new TokenModelDto { AccessToken = accessToken, RefreshToken = refreshToken, Role = "Member" };
+            }
+
+            return null; 
         }
 
-        public string GenerateRefreshToken()
+        public async Task<TokenModelDto?> RefreshTokensAsync(TokenModelDto tokenModel)
         {
-            var randomNumber = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
+            ClaimsPrincipal principal;
+            try
+            {
+                principal = GetPrincipalFromExpiredToken(tokenModel.AccessToken);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+            var email = principal.FindFirstValue(ClaimTypes.Email);
+            var role = principal.FindFirstValue(ClaimTypes.Role);
+            var idString = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(role) || !Guid.TryParse(idString, out var id))
+            {
+                return null;
+            }
+
+            if (role == "Admin")
+            {
+                var admin = await _context.Admins.FindAsync(id);
+                if (admin == null || admin.RefreshToken != tokenModel.RefreshToken || admin.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                    return null;
+
+                var newAccessToken = GenerateToken(email, role, id);
+                var newRefreshToken = GenerateRefreshToken();
+
+                admin.RefreshToken = newRefreshToken;
+                await _context.SaveChangesAsync();
+
+                return new TokenModelDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken, Role = role };
+            }
+            else if (role == "Member")
+            {
+                var member = await _context.Members.FindAsync(id);
+                if (member == null || member.RefreshToken != tokenModel.RefreshToken || member.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                    return null;
+
+                var newAccessToken = GenerateToken(email, role, id);
+                var newRefreshToken = GenerateRefreshToken();
+
+                member.RefreshToken = newRefreshToken;
+                await _context.SaveChangesAsync();
+
+                return new TokenModelDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken, Role = role };
+            }
+
+            return null;
         }
 
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
@@ -101,12 +110,14 @@ namespace Backend.AuthHelp
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateAudience = true,
-                ValidAudience = configuration["Jwt:Audience"],
+                ValidAudience = _configuration["Jwt:Audience"],
                 ValidateIssuer = true,
-                ValidIssuer = configuration["Jwt:Issuer"],
+                ValidIssuer = _configuration["Jwt:Issuer"],
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
-                ValidateLifetime = false 
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
+                ValidateLifetime = false,
+
+                ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 }
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -120,6 +131,36 @@ namespace Backend.AuthHelp
 
             return principal;
         }
-    }
 
+        private string GenerateToken(string email, string role, Guid id)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role)
+            };
+
+            var token = new JwtSecurityToken(
+                _configuration["Jwt:Issuer"],
+                _configuration["Jwt:Audience"],
+                claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+    }
 }

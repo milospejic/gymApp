@@ -59,13 +59,27 @@ namespace Backend
             {
                 options.AddPolicy("AllowFrontend", builder =>
                 {
-                    // Read the origin from appsettings or environment variables
                     var corsOrigins = Configuration.GetSection("CorsOrigins").Get<string[]>();
 
-                    builder.WithOrigins(corsOrigins)
-                           .AllowAnyHeader()
-                           .AllowAnyMethod()
-                           .AllowCredentials(); 
+                    if (corsOrigins == null || corsOrigins.Length == 0)
+                    {
+                        corsOrigins = new[] { "http://localhost:5173" };
+                    }
+
+                    if (corsOrigins.Contains("*"))
+                    {
+                        builder.SetIsOriginAllowed(origin => true) 
+                               .AllowAnyHeader()
+                               .AllowAnyMethod()
+                               .AllowCredentials();
+                    }
+                    else
+                    {
+                        builder.WithOrigins(corsOrigins)
+                               .AllowAnyHeader()
+                               .AllowAnyMethod()
+                               .AllowCredentials();
+                    }
                 });
             });
 
